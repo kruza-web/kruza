@@ -44,7 +44,7 @@ export const authOptions = {
       return true; // Permite el inicio de sesión
     },
   },
-  
+  debug: true,
 };
 
 export default NextAuth(authOptions);
