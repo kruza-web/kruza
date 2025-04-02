@@ -1,14 +1,13 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import {usersTable} from "@/db/schema";
+import { usersTable } from "@/db/schema";
 import { db } from "@/db";
-import { NextAuthOptions } from "next-auth";
 import { User } from "next-auth";
 import { eq } from "drizzle-orm";
 
 
-const clientId = process.env.GOOGLE_CLIENT_ID;
-const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const clientId = process.env.GOOGLE_CLIENT_ID!;
+const clientSecret = process.env.GOOGLE_CLIENT_SECRET!;
 
 if (!clientId || !clientSecret) {
   throw new Error("Missing Google OAuth environment variables");
