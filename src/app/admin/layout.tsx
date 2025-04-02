@@ -1,6 +1,3 @@
-import { isAdmin } from "@/_actions/actions";
-import { auth } from "../../../auth";
-import { redirect } from "next/navigation";
 import { Nav } from "./nav";
 import { MobileDrawer } from "@/components/mobile-drawer";
 import { ModeToggle } from "@/components/mode-toggle";

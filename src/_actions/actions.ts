@@ -1,8 +1,12 @@
+'use server';
+
+
 import { v2 as cloudinary } from "cloudinary";
 import z from "zod";
 import { adminsTable } from "@/db/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
+import { signIn, signOut } from "next-auth/react";
 
 const cloudinaryConfig = cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -58,7 +62,7 @@ const uploadFile = async ({
   return data;
 };
 
-/* export const signInAction = async (formData: FormData) => {
+export const signInAction = async (formData: FormData) => {
   const redirectPath = formData.get("redirect");
   await signIn(
     "google",
@@ -70,7 +74,7 @@ const uploadFile = async ({
 
 export const signOutAction = async () => {
   await signOut();
-}; */
+};
 
 export const isAdmin = async (email: string) => {
   return (
