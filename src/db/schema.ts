@@ -3,8 +3,6 @@ import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
 
-const sizeEnum = ["XS", "S", "M", "L", "XL", "42", "44", "46"] as const;
-
 export const usersTable = sqliteTable("users", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
@@ -29,7 +27,7 @@ export const productsTable = sqliteTable("products", {
   title: text("title").notNull(),
   description: text("description"),
   img: text("img").notNull(),
-  size: text("size", {enum: ["XS", "S", "M", "L", "XL"]}).notNull(),
+  size: text("size").notNull(),
   price: integer("price").notNull(),
   isRecommended: integer("is_recommended", { mode: "boolean" })
     .default(true)
@@ -96,6 +94,7 @@ export const productSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   price: z.string(),
+  size: z.string(),
   img: z.instanceof(File),
   isRecommended: z.string().optional(),
 });
@@ -106,6 +105,7 @@ export const editProductSchema = z.object({
   price: z.string(),
   img: z.instanceof(File).optional(),
   publicId: z.string(),
+  size: z.string(),
   id: z.string(),
   isRecommended: z.string().optional(),
 });

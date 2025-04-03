@@ -26,9 +26,9 @@ export const authOptions = {
   callbacks: {
     async signIn({ user }: { user: User }) {
       if (!user.email) {
-        return false; // Rechaza el inicio de sesión si no hay correo electrónico
+        return false; 
       }
-      // Registra al usuario en la base de datos si no existe
+      
       const existingUser = (
         await db
           .select()
@@ -36,15 +36,17 @@ export const authOptions = {
           .where(eq(usersTable.email, user.email!))
       )[0];
 
-      await db.insert(usersTable).values({
-        email: user.email!,
-        name: user.name || "",
-      });
+       
+       if (!existingUser) {
+        await db.insert(usersTable).values({
+          email: user.email!,
+          name: user.name || "",
+        });
+      }
 
       return true; // Permite el inicio de sesión
     },
   },
-  debug: true,
 };
 
 export default NextAuth(authOptions);

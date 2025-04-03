@@ -29,7 +29,7 @@ export const MobileDrawer = () => {
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle>Universo Coffee</DrawerTitle>
+            <DrawerTitle className="text-center">K3Y-SHOP</DrawerTitle>
           </DrawerHeader>
           <ul className="grid justify-center gap-3 text-center">
             {adminLinks.map(({ path, title }) => (
