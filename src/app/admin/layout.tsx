@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { isAdmin } from "@/_actions/actions";
 import { authOptions } from "../../../auth";
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 
 export default function RootLayout({
   children,
@@ -33,7 +34,11 @@ async function AdminLayout({
     <>
       <header className="container sticky top-0 z-50 mb-6 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mb-8 md:mb-12">
         <div className="flex items-center justify-between border-b py-4">
-          <h1>K3Y</h1>
+          <h1>
+            <Link href={"/admin"}>
+            K3Y
+            </Link>
+            </h1>
 
           <Nav />
           <div className="flex items-center space-x-3">

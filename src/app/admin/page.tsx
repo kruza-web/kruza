@@ -19,7 +19,8 @@ export default async function Admin() {
     <>
       <h1 className="text-2xl font-bold text-center">Admin</h1>
       <div className="grid grid-cols-1 gap-4 p-4 justify-items-center">
-        <ul>
+        <p className="text-lg">Administra tu tienda desde aquí.</p>
+        <ul className="flex items-center justify-center gap-4">
           {adminLinks.map(({ path, title }) => (
             <li key={path}>
               <Button className="m-2" variant="outline" size="lg">

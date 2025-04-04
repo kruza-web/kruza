@@ -20,7 +20,7 @@ export const Nav: FC<ComponentProps<"nav">> = (props) => {
                   ? "text-foreground"
                   : "text-muted-foreground",
               )}
-              href={`/es/admin${path}`}
+              href={`/admin${path}`}
             >
               {title}
             </Link>
