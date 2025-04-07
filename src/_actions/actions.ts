@@ -7,10 +7,13 @@ import {
   editProductSchema,
   productSchema,
   productsTable,
+  usersToProducts,
+  usersTable
 } from "@/db/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { SelectUserToProduct } from "@/db/schema";
 
 const cloudinaryConfig = cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -88,7 +91,9 @@ export const getProducts = async (
 };
 
 export const createProduct = async (formData: FormData) => {
-  const { price, size, ...rest } = productSchema.parse(Object.fromEntries(formData));
+  const { price, size, ...rest } = productSchema.parse(
+    Object.fromEntries(formData)
+  );
   const { img, isRecommended, ...data } = {
     price: Number(price),
     ...rest,
@@ -165,3 +170,31 @@ export const editProduct = async (formData: FormData) => {
 
   revalidatePath("/admin/products");
 };
+
+export const changeStatus = async ({
+  id,
+  status,
+}: {
+  status: SelectUserToProduct["status"];
+  id: SelectUserToProduct["id"];
+}) => {
+  await db
+    .update(usersToProducts)
+    .set({ status })
+    .where(eq(usersToProducts.id, id));
+  revalidatePath("/admin/orders");
+};
+
+export const getOrders = async () => {
+  return await db.query.usersToProducts.findMany({
+    with: {
+      user: true,
+      product: true,
+    },
+  });
+};
+
+
+export const getUsers = async () => {
+  return await db.select().from(usersTable);
+}

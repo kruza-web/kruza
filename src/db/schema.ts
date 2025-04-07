@@ -76,7 +76,7 @@ export const usersToProductsRelations = relations(
 
 
 export type InsertUser = typeof usersTable.$inferInsert;
-export type Selectuser = typeof usersTable.$inferSelect;
+export type SelectUser = typeof usersTable.$inferSelect;
 
 export type InsertProduct = typeof productsTable.$inferInsert;
 export type SelectProduct = typeof productsTable.$inferSelect;
