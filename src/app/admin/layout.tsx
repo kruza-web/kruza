@@ -1,5 +1,5 @@
 import { Nav } from "./nav";
-import { MobileDrawer } from "@/components/mobile-drawer";
+import { MobileDrawer } from "@/app/admin/mobile-drawer";
 import { ModeToggle } from "@/components/mode-toggle";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/_actions/actions";
@@ -20,7 +20,6 @@ async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) redirect(`/sign-in?redirect=admin`);
 
@@ -35,10 +34,8 @@ async function AdminLayout({
       <header className="container sticky top-0 z-50 mb-6 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mb-8 md:mb-12">
         <div className="flex items-center justify-between border-b py-4">
           <h1>
-            <Link href={"/admin"}>
-            K3Y
-            </Link>
-            </h1>
+            <Link href={"/admin"}>K3Y</Link>
+          </h1>
 
           <Nav />
           <div className="flex items-center space-x-3">

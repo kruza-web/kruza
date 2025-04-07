@@ -13,6 +13,7 @@ import {
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { adminLinks } from "@/app/admin/links";
 
 export const MobileDrawer = () => {
   const [open, setOpen] = useState(false);
@@ -31,16 +32,18 @@ export const MobileDrawer = () => {
             <DrawerTitle className="text-center">K3Y-SHOP</DrawerTitle>
           </DrawerHeader>
           <ul className="grid justify-center gap-3 text-center">
-              <li>
+            {adminLinks.map(({ path, title }) => (
+              <li key={path}>
                 <Link
-                  href={`/tienda`}
+                  href={`/es${path}`}
                   onClick={() => {
                     setOpen(false);
                   }}
                 >
-                  Tienda
+                  {title}
                 </Link>
               </li>
+            ))}
           </ul>
           <DrawerFooter>
             <DrawerClose asChild>

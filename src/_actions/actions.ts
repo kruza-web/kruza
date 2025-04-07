@@ -14,6 +14,8 @@ import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { SelectUserToProduct } from "@/db/schema";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth";
 
 const cloudinaryConfig = cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -194,7 +196,16 @@ export const getOrders = async () => {
   });
 };
 
-
 export const getUsers = async () => {
   return await db.select().from(usersTable);
 }
+
+export const getUser = async () => {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email;
+  if (!email) return;
+
+  return await db.query.usersTable.findFirst({
+    where: eq(usersTable.email, email),
+  });
+};
