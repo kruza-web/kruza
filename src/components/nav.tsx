@@ -1,18 +1,21 @@
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import SearchBar  from "./searchBar";
 import { HTMLAttributes } from "react";
 import {FC } from "react";
+import { getProducts } from "@/_actions/actions";
 
 type NavbarProps = HTMLAttributes<HTMLElement> 
 
-export const Nav: FC<NavbarProps> = ({
+export const Nav: FC<NavbarProps> = async ({
   className,
 }: NavbarProps) => {
+  const products = await getProducts()
+  console.log(products)
   return (
     <nav className={cn("flex items-center space-x-4", className)}>
-      <Link href="/" className="transition-colors hover:text-foreground text-muted-foreground">
-        Tienda
-      </Link>
+      <div>
+        <SearchBar products={products}/>
+      </div>
     </nav>
   );
 }
