@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import SearchResults from "../components/search-results"
 
-// Datos de ejemplo para simular resultados de búsqueda
 type Product = {
     id: number,
     title: string,
@@ -43,7 +42,7 @@ export default function SearchBar({products}: {products: Product[]}) {
 
   return (
     <div className="relative">
-      <div className="sm:w-5 lg:w-3xl flex items-center border rounded-full overflow-hidden">
+      <div className="lg:w-3xl flex items-center border rounded-full overflow-hidden">
         <Input
           type="text"
           placeholder="Busca tu producto..."

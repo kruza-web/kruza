@@ -10,7 +10,7 @@ export const Nav: FC<NavbarProps> = async ({
   className,
 }: NavbarProps) => {
   const products = await getProducts()
-  console.log(products)
+
   return (
     <nav className={cn("flex items-center space-x-4", className)}>
       <div>

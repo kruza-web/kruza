@@ -4,6 +4,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { User } from "@/components/user";
 import { getUser } from "@/_actions/actions";
 import { MobileDrawer } from "@/components/mobile-drawer";
+import { Cart } from "@/components/cart-button";
 
 export default async function RootLayout({
   children,
@@ -22,7 +23,7 @@ export default async function RootLayout({
           <div className="flex items-center space-x-3">
             <ModeToggle />
             <User />
-            {/* {user && <Cart>} */}
+             {user && <Cart/>} 
             <MobileDrawer />
           </div>
         </div>
