@@ -21,7 +21,7 @@ type Product = {
 
 export function ProductCard({ products }: {products:Product}) {
   const { items, addItem, removeItem } = useCart()
-  const {id, title, price, img } = products
+  const {id, title, price, img, size } = products
 
   // Find if product is in cart and get quantity
   const cartItem = items.find((item) => item.id === id)
@@ -39,6 +39,7 @@ export function ProductCard({ products }: {products:Product}) {
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <p className="font-medium">{currency.format(price)}</p>
+        <p className="font-medium">{size}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
           <div className="flex items-center justify-end gap-2 w-full">
@@ -46,7 +47,7 @@ export function ProductCard({ products }: {products:Product}) {
               <Minus className="size-4" />
             </Button>
             <span className="font-medium">{quantity}</span>
-            <Button variant="outline" size="icon" onClick={() => addItem({id, title, price, img })}>
+            <Button variant="outline" size="icon" onClick={() => addItem({size, id, title, price, img })}>
               <Plus className="size-4" />
             </Button>
           </div>

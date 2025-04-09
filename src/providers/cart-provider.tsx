@@ -10,6 +10,7 @@ export type CartItem = {
   price: number
   img: string
   quantity: number
+  size: string
 }
 
 type CartContextType = {

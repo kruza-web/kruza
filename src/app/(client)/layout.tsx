@@ -12,6 +12,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getUser();
+  const email = await user?.email
   return (
     <>
       <header className="sticky top-0 z-50 ">
@@ -23,7 +24,7 @@ export default async function RootLayout({
           <div className="flex items-center space-x-3">
             <ModeToggle />
             <User />
-             {user && <Cart/>} 
+             {user && <Cart  email={email} />} 
             <MobileDrawer />
           </div>
         </div>

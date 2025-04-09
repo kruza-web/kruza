@@ -6,7 +6,7 @@ import { ShoppingBag } from "lucide-react"
 import { useCart } from "../providers/cart-provider"
 import { CartSheet } from "../components/cart-sheet"
 
-export function Cart() {
+export function Cart({email}: { email?: string }) {
   const [open, setOpen] = useState(false)
   const { itemCount } = useCart()
 
@@ -20,7 +20,7 @@ export function Cart() {
           </span>
         )}
       </Button>
-      <CartSheet open={open} onOpenChange={setOpen} />
+      <CartSheet open={open} onOpenChange={setOpen} email={email} />
     </>
   )
 }
