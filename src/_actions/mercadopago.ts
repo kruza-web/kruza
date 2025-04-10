@@ -1,12 +1,9 @@
 "use server"
 
-import { MercadoPagoConfig, Preference } from "mercadopago"
+import {  Preference } from "mercadopago"
 import { redirect } from "next/navigation"
 import type { CartItem } from "../providers/cart-provider"
-
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN!,
-})
+import { client } from "@/app/api/payments/mercadopago"
 
 export async function createCheckoutSession(items: CartItem[], userId?: string) {
   let redirectUrl: string | null = null;

@@ -16,6 +16,8 @@ import { revalidatePath } from "next/cache";
 import { SelectUserToProduct } from "@/db/schema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth";
+import { CartItem } from "@/providers/cart-provider";
+import { Items } from "mercadopago/dist/clients/commonTypes";
 
 const cloudinaryConfig = cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -208,4 +210,36 @@ export const getUser = async () => {
   return await db.query.usersTable.findFirst({
     where: eq(usersTable.email, email),
   });
+};
+
+export const buy = async (
+  items: Items[],
+  { email, delivery }: { email: string; delivery: boolean },
+) => {
+  let userId;
+  const users = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
+
+  if (users.length === 0) {
+    const [{ id }] = await db
+      .insert(usersTable)
+      .values({ email, name: "" })
+      .returning();
+    userId = id;
+  } else {
+    userId = users[0].id;
+  }
+
+  await db.insert(usersToProducts).values(
+    items.map(({ id: productId, quantity }) => ({
+      productId: parseInt(productId),
+      userId,
+      quantity,
+      delivery,
+    })),
+  );
+
+  revalidatePath("/");
 };
