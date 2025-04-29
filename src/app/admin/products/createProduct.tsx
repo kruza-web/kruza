@@ -65,7 +65,7 @@ export const CreateProduct = () => {
             htmlFor="img"
             className="block text-sm font-medium "
           >
-            Imagen
+            Imagen #1
           </Label>
           <Input
             type="file"
@@ -77,6 +77,40 @@ export const CreateProduct = () => {
           />
         </div>
 
+        <div>
+          <Label
+            htmlFor="img2"
+            className="block text-sm font-medium "
+          >
+            Imagen #2
+          </Label>
+          <Input
+            type="file"
+            name="img2"
+            id="picture"
+            accept="image/*"
+            required
+            className="mt-1 block w-full text-sm file:mr-4 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-300"
+          />
+        </div>
+
+        <div>
+          <Label
+            htmlFor="img2"
+            className="block text-sm font-medium "
+          >
+            Imagen #3
+          </Label>
+          <Input
+            type="file"
+            name="img2"
+            id="picture"
+            accept="image/*"
+            required
+            className="mt-1 block w-full text-sm file:mr-4 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-300"
+          />
+        </div>
+        
         <div>
           <Label htmlFor="size" className="block text-sm font-medium ">
             Talles

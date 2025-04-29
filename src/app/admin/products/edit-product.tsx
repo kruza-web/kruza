@@ -22,6 +22,8 @@ export const EditProduct = ({
   title,
   description,
   img,
+  img2,
+  img3,
   price,
   size,
   isRecommended,
@@ -41,9 +43,9 @@ export const EditProduct = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
+          <DialogTitle>Edit products</DialogTitle>
           <DialogDescription>
-            Make changes to your profile here.
+            Edit your profile here.
           </DialogDescription>
         </DialogHeader>
         <form action={handleAction}>
@@ -119,6 +121,38 @@ export const EditProduct = ({
 
           <div>
             <Label
+              htmlFor="edit_picture2"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Imagen
+            </Label>
+            <Input
+              type="file"
+              name="img2"
+              id="edit_picture2"
+              accept="image/*"
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <Label
+              htmlFor="edit_picture3"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Imagen
+            </Label>
+            <Input
+              type="file"
+              name="img3"
+              id="edit_picture3"
+              accept="image/*"
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <Label
               htmlFor="edit_size"
               className="block text-sm font-medium text-gray-700"
             >
@@ -151,6 +185,8 @@ export const EditProduct = ({
             </label>
           </div>
           <input type="hidden" name="publicId" value={img} required />
+          <input type="hidden" name="publicId2" value={img2} required />
+          <input type="hidden" name="publicId3" value={img3} required />
           <input type="hidden" name="id" value={id} required />
             <Submit className="w-full text-white py-2 px-4 rounded-md shadow-sm hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" />
         </form>

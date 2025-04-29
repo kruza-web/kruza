@@ -1,6 +1,7 @@
 import { getProducts } from "@/_actions/actions";
 import banner1 from "../../../public/banner1.jpeg";
 import Image from "next/image";
+import { ProductCard } from "@/components/product-card";
 
 export default async function Home() {
   const products = await getProducts();
@@ -9,7 +10,7 @@ export default async function Home() {
       {/* BANNER RESPONSIVE */}
       <div className="w-screen overflow-hidden">
         {/* DESKTOP & TABLET */}
-        <div className="hidden sm:block w-full h-[400px] relative lg:h-[800px]">
+        <div className="hidden sm:block w-full h-[400px] relative lg:h-[1080px]">
           <Image
             src={banner1}
             alt="Banner horizontal"
@@ -30,9 +31,18 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center w-full h-screen">
-        <h1>K3Y-SHOP</h1>
-        <h2 className="mt-12">PROXIMAMENTE...</h2>
+      <div className="my-12 ml-6">
+        <h1> NUESTRA ROPITAHHHH</h1>
+        <div >
+          <ul className="m-8 grid gap-4 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4">
+          {products.map((product) => (
+            <li key={product.id}>
+              <ProductCard products={product} />
+            </li>
+          ))} 
+            
+          </ul>
+        </div>
       </div>
     </>
   );

@@ -18,6 +18,8 @@ export const Product = ({
   id,
   description,
   img,
+  img2,
+  img3,
   price,
   title,
   size,
@@ -49,6 +51,8 @@ export const Product = ({
             description={description}
             price={price}
             img={img}
+            img2={img2}
+            img3={img3}
             size={size}
             isRecommended={isRecommended}
           />

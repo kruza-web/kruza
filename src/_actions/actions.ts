@@ -8,7 +8,7 @@ import {
   productSchema,
   productsTable,
   usersToProducts,
-  usersTable
+  usersTable,
 } from "@/db/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
@@ -95,69 +95,129 @@ export const getProducts = async (
 };
 
 export const createProduct = async (formData: FormData) => {
-  const { price, size, ...rest } = productSchema.parse(
-    Object.fromEntries(formData)
-  );
-  const { img, isRecommended, ...data } = {
-    price: Number(price),
-    ...rest,
-  };
+  const file = formData.get("img") as File | null;
+  const file2 = formData.get("img2") as File | null;
+  const file3 = formData.get("img3") as File | null;
 
+  const entries = Array.from(formData.entries()).filter(
+    ([key]) => !["img", "img2", "img3"].includes(key)
+  );
+  const parsed = productSchema.parse(Object.fromEntries(entries));
+
+  const { price, size, isRecommended, ...rest } = parsed;
   const sizes = formData.getAll("size") as string[];
-  const file = img as File;
 
   let publicId = "";
+  let publicId2 = "";
+  let publicId3 = "";
 
-  if (file.size) {
+  if (file instanceof File && file.size > 0) {
     const { signature, timestamp } = getSignature();
     const data = await uploadFile({ file, signature, timestamp });
     publicId = data.public_id;
   }
 
+  if (file2 instanceof File && file2.size > 0) {
+    const { signature, timestamp } = getSignature();
+    const data = await uploadFile({ file: file2, signature, timestamp });
+    publicId2 = data.public_id;
+  }
+
+  if (file3 instanceof File && file3.size > 0) {
+    const { signature, timestamp } = getSignature();
+    const data = await uploadFile({ file: file3, signature, timestamp });
+    publicId3 = data.public_id;
+  }
+
   await db.insert(productsTable).values({
+    ...rest,
     img: publicId,
-    isRecommended: !!isRecommended,
+    img2: publicId2,
+    img3: publicId3,
+    isRecommended: Boolean(isRecommended),
     size: sizes.join(", "),
-    ...data,
+    price: Number(price),
   });
   revalidatePath("/");
 };
 
 export const deleteProduct = async (formData: FormData) => {
-  const { id, img } = z
+  const { id, img, img2, img3 } = z
     .object({
       id: z.string(),
       img: z.string(),
+      img2: z.string(),
+      img3: z.string(),
     })
     .parse(Object.fromEntries(formData));
 
   await Promise.all([
     db.delete(productsTable).where(eq(productsTable.id, parseInt(id))),
     cloudinary.uploader.destroy(img),
+    cloudinary.uploader.destroy(img2),
+    cloudinary.uploader.destroy(img3),
   ]);
   revalidatePath("/");
 };
 
 export const editProduct = async (formData: FormData) => {
+  const file = formData.get("img") as File | null;
+  const file2 = formData.get("img2") as File | null;
+  const file3 = formData.get("img3") as File | null;
+
+  const origPublicId = formData.get("publicId") as string;
+  const origPublicId2 = formData.get("publicId2") as string;
+  const origPublicId3 = formData.get("publicId3") as string;
+
+  const entries = Array.from(formData.entries()).filter(
+    ([key]) => !["img", "img2", "img3", "publicId", "publicId2", "publicId3"].includes(key)
+  );
+  const parsed = editProductSchema.parse(Object.fromEntries(entries));
+
   const {
     title,
     id,
     publicId,
+    publicId2,
+    publicId3,
     description,
-    img: file,
     price,
     isRecommended,
-  } = editProductSchema.parse(Object.fromEntries(formData));
+  } = parsed;
 
-  const size = formData.getAll("size") as string[];
+  const sizes = formData.getAll("size") as string[];
 
-  let newPublicId = publicId;
+  let newPublicId = origPublicId;
+  let newPublicId2 = origPublicId2;
+  let newPublicId3 = origPublicId3;
 
-  if (file?.size) {
-    cloudinary.uploader.destroy(publicId);
+  if (file instanceof File && file.size > 0 && origPublicId) {
+    cloudinary.uploader.destroy(origPublicId);
     const { signature, timestamp } = getSignature();
     const { public_id } = await uploadFile({ file, signature, timestamp });
     newPublicId = public_id;
+  }
+
+  if (file2 instanceof File && file2.size > 0 && origPublicId2) {
+    cloudinary.uploader.destroy(origPublicId2);
+    const { signature, timestamp } = getSignature();
+    const { public_id } = await uploadFile({
+      file: file2,
+      signature,
+      timestamp,
+    });
+    newPublicId2 = public_id;
+  }
+
+  if (file3 instanceof File && file3.size > 0 && origPublicId3) {
+    cloudinary.uploader.destroy(origPublicId3);
+    const { signature, timestamp } = getSignature();
+    const { public_id } = await uploadFile({
+      file: file3,
+      signature,
+      timestamp,
+    });
+    newPublicId3 = public_id;
   }
 
   await db
@@ -165,10 +225,12 @@ export const editProduct = async (formData: FormData) => {
     .set({
       title,
       description,
-      isRecommended: !!isRecommended,
+      isRecommended: Boolean(isRecommended),
       img: newPublicId,
+      img2: newPublicId2,
+      img3: newPublicId3,
       price: Number(price),
-      size: size.join(", "),
+      size: sizes.join(", "),
     })
     .where(eq(productsTable.id, parseInt(id)));
 
@@ -200,7 +262,7 @@ export const getOrders = async () => {
 
 export const getUsers = async () => {
   return await db.select().from(usersTable);
-}
+};
 
 export const getUser = async () => {
   const session = await getServerSession(authOptions);
@@ -214,7 +276,7 @@ export const getUser = async () => {
 
 export const buy = async (
   items: Items[],
-  { email, delivery }: { email: string; delivery: boolean },
+  { email, delivery }: { email: string; delivery: boolean }
 ) => {
   let userId;
   const users = await db
@@ -238,7 +300,7 @@ export const buy = async (
       userId,
       quantity,
       delivery,
-    })),
+    }))
   );
 
   revalidatePath("/");

@@ -27,6 +27,8 @@ export const productsTable = sqliteTable("products", {
   title: text("title").notNull(),
   description: text("description"),
   img: text("img").notNull(),
+  img2: text("img2").notNull(),
+  img3: text("img3").notNull(),
   size: text("size").notNull(),
   price: integer("price").notNull(),
   isRecommended: integer("is_recommended", { mode: "boolean" })
@@ -95,7 +97,9 @@ export const productSchema = z.object({
   description: z.string().optional(),
   price: z.string(),
   size: z.string(),
-  img: z.instanceof(File),
+  img: z.instanceof(File).optional(),
+  img2: z.instanceof(File).optional(),
+  img3: z.instanceof(File).optional(),
   isRecommended: z.string().optional(),
 });
 
@@ -104,7 +108,11 @@ export const editProductSchema = z.object({
   description: z.string().optional(),
   price: z.string(),
   img: z.instanceof(File).optional(),
+  img2: z.instanceof(File).optional(),
+  img3: z.instanceof(File).optional(),
   publicId: z.string(),
+  publicId2: z.string(),
+  publicId3: z.string(),
   size: z.string(),
   id: z.string(),
   isRecommended: z.string().optional(),
