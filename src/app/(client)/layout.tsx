@@ -30,6 +30,11 @@ export default async function RootLayout({
         </div>
       </header>
       <main>{children}</main>
+      <footer className="flex items-center justify-center border-t py-4">
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <p>© 2023 K3Y-SHOP. Todos los derechos reservados.</p>
+        </div>  
+        </footer>
     </>
   );
 }
