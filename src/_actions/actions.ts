@@ -16,7 +16,6 @@ import { revalidatePath } from "next/cache";
 import { SelectUserToProduct } from "@/db/schema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth";
-import { CartItem } from "@/providers/cart-provider";
 import { Items } from "mercadopago/dist/clients/commonTypes";
 
 const cloudinaryConfig = cloudinary.config({
@@ -177,9 +176,6 @@ export const editProduct = async (formData: FormData) => {
   const {
     title,
     id,
-    publicId,
-    publicId2,
-    publicId3,
     description,
     price,
     isRecommended,
@@ -305,3 +301,11 @@ export const buy = async (
 
   revalidatePath("/");
 };
+
+export const getProductById = async (id: string) => {
+  const product = await db.query.productsTable.findFirst({
+    where: eq(productsTable.id, parseInt(id)),
+  });
+  if (!product) throw new Error("Product not found");
+  return product;
+}

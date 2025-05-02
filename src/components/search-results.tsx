@@ -15,14 +15,16 @@ export default function SearchResults({ products }:{ products:Product[]}) {
     <Card className="w-full p-2 shadow-lg">
       <div className="space-y-2">
         {products.map((product) => (
-          <ProductItem key={product.id} product={product} />
+          <Link key={product.id} href={`/store/${product.id}`}>
+          <ProductItem product={product} />
+          </Link>
         ))}
       </div>
 
       {products.length > 0 && (
         <div className="mt-4 text-center">
-          <Link href="/" className="text-sm font-medium">
-            Ver todos los resultados
+          <Link href="/store" className="text-sm font-medium">
+            Ir a la tienda
           </Link>
         </div>
       )}

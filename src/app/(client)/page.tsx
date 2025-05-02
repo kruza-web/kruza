@@ -38,7 +38,7 @@ export default async function Home() {
           <ul className="m-8 grid gap-4 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4">
           {products.map((product) => (
             <li key={product.id}>
-              <Link href={`/products/${product.id}`}>
+              <Link href={`/store/${product.id}`}>
               <ProductCard products={product} />
               </Link>
             </li>
