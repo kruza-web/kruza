@@ -5,6 +5,7 @@ import { User } from "@/components/user";
 import { getUser } from "@/_actions/actions";
 import { MobileDrawer } from "@/components/mobile-drawer";
 import { Cart } from "@/components/cart-button";
+import { Facebook, Instagram, Twitter } from "lucide-react";
 
 export default async function RootLayout({
   children,
@@ -30,8 +31,15 @@ export default async function RootLayout({
         </div>
       </header>
       <main className="flex-grow">{children}</main>
-      <footer className="flex items-center justify-center border-t py-4">
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+      <footer className="flex flex-col items-center justify-center border-t py-2">
+        <div className="flex py-4 items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+        <Instagram className="h-6 w-6 text-gray-500 hover:text-gray-700" />
+        <Facebook className="h-6 w-6 text-gray-500 hover:text-gray-700" />
+        <Twitter className="h-6 w-6 text-gray-500 hover:text-gray-700" />
+        </div>
+        </div>
+        <div className="flex items-center justify-center text-sm text-muted-foreground">
           <p>© 2023 K3Y-SHOP. Todos los derechos reservados.</p>
         </div>  
         </footer>

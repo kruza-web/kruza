@@ -24,6 +24,7 @@ export const Product = ({
   title,
   size,
   isRecommended,
+  category
 }: SelectProduct) => {
   return (
     <Card className="w-full max-w-sm overflow-hidden" key={id}>
@@ -55,6 +56,7 @@ export const Product = ({
             img3={img3}
             size={size}
             isRecommended={isRecommended}
+            category={category}
           />
           <DeleteProduct id={id} img={img} />
         </div>

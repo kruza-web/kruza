@@ -16,6 +16,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Submit } from "@/components/submit";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select";
 
 export const EditProduct = ({
   id,
@@ -84,6 +91,25 @@ export const EditProduct = ({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
+
+          <div>
+          <Label htmlFor="category" className="block text-sm font-medium ">
+            Categoría
+          </Label>
+          <Select name="category" required>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="top" id="top">
+                Top
+              </SelectItem>
+              <SelectItem value="bottom" id="bottom">
+                Bottom
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
           <div>
             <Label

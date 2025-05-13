@@ -3,6 +3,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Submit } from "@/components/submit";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select";
 
 export const CreateProduct = () => {
   return (
@@ -10,10 +17,7 @@ export const CreateProduct = () => {
       <h2 className="text-xl font-bold mb-4">Añadir Producto</h2>
       <form action={createProduct} className="space-y-6">
         <div>
-          <Label
-            htmlFor="title"
-            className="block text-sm font-medium "
-          >
+          <Label htmlFor="title" className="block text-sm font-medium ">
             Título
           </Label>
           <Input
@@ -27,10 +31,7 @@ export const CreateProduct = () => {
         </div>
 
         <div>
-          <Label
-            htmlFor="description"
-            className="block text-sm font-medium "
-          >
+          <Label htmlFor="description" className="block text-sm font-medium ">
             Descripción
           </Label>
           <Input
@@ -42,12 +43,27 @@ export const CreateProduct = () => {
             className="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
+        <div>
+          <Label htmlFor="category" className="block text-sm font-medium ">
+            Categoría
+          </Label>
+          <Select name="category" required>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="top" id="top">
+                Top
+              </SelectItem>
+              <SelectItem value="bottom" id="bottom">
+                Bottom
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         <div>
-          <Label
-            htmlFor="price"
-            className="block text-sm font-medium "
-          >
+          <Label htmlFor="price" className="block text-sm font-medium ">
             Precio
           </Label>
           <Input
@@ -61,10 +77,7 @@ export const CreateProduct = () => {
         </div>
 
         <div>
-          <Label
-            htmlFor="img"
-            className="block text-sm font-medium "
-          >
+          <Label htmlFor="img" className="block text-sm font-medium ">
             Imagen #1
           </Label>
           <Input
@@ -78,10 +91,7 @@ export const CreateProduct = () => {
         </div>
 
         <div>
-          <Label
-            htmlFor="img2"
-            className="block text-sm font-medium "
-          >
+          <Label htmlFor="img2" className="block text-sm font-medium ">
             Imagen #2
           </Label>
           <Input
@@ -95,22 +105,19 @@ export const CreateProduct = () => {
         </div>
 
         <div>
-          <Label
-            htmlFor="img2"
-            className="block text-sm font-medium "
-          >
+          <Label htmlFor="img2" className="block text-sm font-medium ">
             Imagen #3
           </Label>
           <Input
             type="file"
-            name="img2"
+            name="img3"
             id="picture"
             accept="image/*"
             required
             className="mt-1 block w-full text-sm file:mr-4 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-300"
           />
         </div>
-        
+
         <div>
           <Label htmlFor="size" className="block text-sm font-medium ">
             Talles

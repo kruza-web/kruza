@@ -26,6 +26,7 @@ export const productsTable = sqliteTable("products", {
   id: integer("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
+  category: text("category", {enum: ["top","bottom"]}).notNull(),
   img: text("img").notNull(),
   img2: text("img2").notNull(),
   img3: text("img3").notNull(),
@@ -101,6 +102,7 @@ export const productSchema = z.object({
   img2: z.instanceof(File).optional(),
   img3: z.instanceof(File).optional(),
   isRecommended: z.string().optional(),
+  category: z.enum(["top", "bottom"]),
 });
 
 export const editProductSchema = z.object({
@@ -116,4 +118,5 @@ export const editProductSchema = z.object({
   size: z.string(),
   id: z.string(),
   isRecommended: z.string().optional(),
+  category: z.enum(["top", "bottom"]),
 });

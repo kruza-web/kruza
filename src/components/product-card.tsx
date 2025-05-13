@@ -23,6 +23,7 @@ type Product = {
   size: string;
   price: number;
   isRecommended: boolean;
+  category: string;
   quantity?: number;
 };
 
@@ -33,15 +34,16 @@ export function ProductCard({ products }: { products: Product }) {
   return (
     <>
       <div
-        className="relative w-full h-[450px] overflow-hidden rounded-t-lg cursor-pointer group"
+        className="relative w-full h-[500px] overflow-hidden rounded-t-lg cursor-pointer group"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         <CldImage
           src={hovered ? img : img2}
           alt={title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          width={500}
+          height={750}
+          className="object-cover w-full h-full transition-transform duration-1200 group-hover:scale-105"
         />
         </div>
         <div>     

@@ -179,6 +179,7 @@ export const editProduct = async (formData: FormData) => {
     description,
     price,
     isRecommended,
+    category,
   } = parsed;
 
   const sizes = formData.getAll("size") as string[];
@@ -221,6 +222,7 @@ export const editProduct = async (formData: FormData) => {
     .set({
       title,
       description,
+      category,
       isRecommended: Boolean(isRecommended),
       img: newPublicId,
       img2: newPublicId2,
