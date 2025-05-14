@@ -178,24 +178,30 @@ export const EditProduct = ({
           </div>
 
           <div>
-            <Label
-              htmlFor="edit_size"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <Label htmlFor="edit_size" className="block text-sm font-medium text-gray-700">
               Talles
             </Label>
             <div className="flex gap-4 mt-2">
-              {["XS", "S", "M", "L", "XL"].map((size) => (
-                <label key={size} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    name="size"
-                    value={size}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="text-sm">{size}</span>
-                </label>
-              ))}
+              {["XS", "S", "M", "L", "XL"].map((sizeOption) => {
+                // Verificar si este talle está en la lista de talles del producto
+                const isChecked = size
+                  .split(",")
+                  .map((s) => s.trim())
+                  .includes(sizeOption)
+
+                return (
+                  <label key={sizeOption} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      name="size"
+                      value={sizeOption}
+                      defaultChecked={isChecked}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm">{sizeOption}</span>
+                  </label>
+                )
+              })}
             </div>
           </div>
 

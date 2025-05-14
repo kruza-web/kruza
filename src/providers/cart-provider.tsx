@@ -11,13 +11,15 @@ export type CartItem = {
   img: string
   quantity: number
   size: string
+  color?: number
+  variantId?: number
 }
 
 type CartContextType = {
   items: CartItem[]
   addItem: (item: Omit<CartItem, "quantity">) => void
-  removeItem: (id: number) => void
-  updateQuantity: (id: number, quantity: number) => void
+  removeItem: (id: number, variantId?: number) => void
+  updateQuantity: (id: number, quantity: number, variantId?: number) => void
   clearCart: () => void
   itemCount: number
   totalPrice: number
@@ -58,39 +60,78 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Add item to cart
   const addItem = (newItem: Omit<CartItem, "quantity">) => {
     setItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === newItem.id)
+      // Si el producto tiene una variante, buscar por ID de producto y variante
+      if (newItem.variantId) {
+        const existingItem = prevItems.find((item) => item.id === newItem.id && item.variantId === newItem.variantId)
 
-      if (existingItem) {
-        // If item already exists, increase quantity
-        return prevItems.map((item) => (item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item))
+        if (existingItem) {
+          // Si el item ya existe, aumentar la cantidad
+          return prevItems.map((item) =>
+            item.id === newItem.id && item.variantId === newItem.variantId
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
+          )
+        } else {
+          // Si no existe, agregar nuevo item con cantidad 1
+          return [...prevItems, { ...newItem, quantity: 1 }]
+        }
       } else {
-        // Otherwise add new item with quantity 1
-        return [...prevItems, { ...newItem, quantity: 1 }]
+        // Comportamiento anterior para productos sin variantes
+        const existingItem = prevItems.find((item) => item.id === newItem.id)
+
+        if (existingItem) {
+          return prevItems.map((item) => (item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item))
+        } else {
+          return [...prevItems, { ...newItem, quantity: 1 }]
+        }
       }
     })
   }
 
   // Remove item from cart
-  const removeItem = (id: number) => {
+  const removeItem = (id: number, variantId?: number) => {
     setItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === id)
+      if (variantId) {
+        const existingItem = prevItems.find((item) => item.id === id && item.variantId === variantId)
 
-      if (existingItem && existingItem.quantity > 1) {
-        // If quantity > 1, decrease quantity
-        return prevItems.map((item) => (item.id === id ? { ...item, quantity: item.quantity - 1 } : item))
+        if (existingItem && existingItem.quantity > 1) {
+          // Si la cantidad > 1, disminuir cantidad
+          return prevItems.map((item) =>
+            item.id === id && item.variantId === variantId ? { ...item, quantity: item.quantity - 1 } : item,
+          )
+        } else {
+          // Si no, eliminar el item completamente
+          return prevItems.filter((item) => !(item.id === id && item.variantId === variantId))
+        }
       } else {
-        // Otherwise remove item completely
-        return prevItems.filter((item) => item.id !== id)
+        // Comportamiento anterior para productos sin variantes
+        const existingItem = prevItems.find((item) => item.id === id)
+
+        if (existingItem && existingItem.quantity > 1) {
+          return prevItems.map((item) => (item.id === id ? { ...item, quantity: item.quantity - 1 } : item))
+        } else {
+          return prevItems.filter((item) => item.id !== id)
+        }
       }
     })
   }
 
   // Update quantity directly
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (id: number, quantity: number, variantId?: number) => {
     if (quantity <= 0) {
-      setItems((prevItems) => prevItems.filter((item) => item.id !== id))
+      if (variantId) {
+        setItems((prevItems) => prevItems.filter((item) => !(item.id === id && item.variantId === variantId)))
+      } else {
+        setItems((prevItems) => prevItems.filter((item) => item.id !== id))
+      }
     } else {
-      setItems((prevItems) => prevItems.map((item) => (item.id === id ? { ...item, quantity } : item)))
+      if (variantId) {
+        setItems((prevItems) =>
+          prevItems.map((item) => (item.id === id && item.variantId === variantId ? { ...item, quantity } : item)),
+        )
+      } else {
+        setItems((prevItems) => prevItems.map((item) => (item.id === id ? { ...item, quantity } : item)))
+      }
     }
   }
 

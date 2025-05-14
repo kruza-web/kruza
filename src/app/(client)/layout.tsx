@@ -16,7 +16,7 @@ export default async function RootLayout({
   const email = await user?.email
   return (
     <>
-      <header className="sticky top-0 z-50 ">
+      <header className="sticky top-0 z-50">
         <div className="flex items-center gap-10 justify-end border-b py-4 md:justify-between mx-4">
           <Link href={"/"} className="ml-4 hidden md:block">
             K3Y-SHOP

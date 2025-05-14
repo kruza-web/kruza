@@ -31,20 +31,20 @@ async function AdminLayout({
 
   return (
     <>
-      <header className="container sticky top-0 z-50 mb-6 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mb-8 md:mb-12">
-        <div className="flex items-center justify-between border-b py-4">
+      <header className="sticky top-0 z-50">
+        <div className="flex items-center gap-10 justify-end border-b py-4 md:justify-between mx-4">
           <h1>
             <Link href={"/admin"}>K3Y</Link>
           </h1>
 
-          <Nav />
+          <Nav/>
           <div className="flex items-center space-x-3">
             <ModeToggle />
             <MobileDrawer />
           </div>
         </div>
       </header>
-      <main className="container grow">{children}</main>
+      <main className="flex-grow">{children}</main>
     </>
   );
 }

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Submit } from "@/components/submit";
 
-export const DeleteProduct = ({ id, img }: { id: number; img: string }) => {
+export const DeleteProduct = ({ id, img, img2, img3 }: { id: number; img: string,img2: string, img3:string }) => {
   const [open, setOpen] = useState(false);
   const handleAction = async (formData: FormData) => {
     await deleteProduct(formData);
@@ -43,6 +43,8 @@ export const DeleteProduct = ({ id, img }: { id: number; img: string }) => {
 
           <form action={handleAction}>
             <input type="hidden" name="img" value={img} />
+             <input type="hidden" name="img2" value={img2} />
+              <input type="hidden" name="img3" value={img3} />
             <input type="hidden" name="id" value={id} />
             <Submit text="Borrar" />
           </form>

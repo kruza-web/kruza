@@ -9,6 +9,7 @@ import {
   productsTable,
   usersToProducts,
   usersTable,
+  productVariantsTable
 } from "@/db/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
@@ -150,6 +151,13 @@ export const deleteProduct = async (formData: FormData) => {
     })
     .parse(Object.fromEntries(formData));
 
+    // 1. Borra variantes relacionadas
+  await db.delete(productVariantsTable).where(eq(productVariantsTable.productId, parseInt(id)));
+
+  // 2. Borra otras relaciones si existen (ejemplo: usersToProducts)
+  await db.delete(usersToProducts).where(eq(usersToProducts.productId, parseInt(id)));
+
+
   await Promise.all([
     db.delete(productsTable).where(eq(productsTable.id, parseInt(id))),
     cloudinary.uploader.destroy(img),
@@ -169,7 +177,7 @@ export const editProduct = async (formData: FormData) => {
   const origPublicId3 = formData.get("publicId3") as string;
 
   const entries = Array.from(formData.entries()).filter(
-    ([key]) => !["img", "img2", "img3", "publicId", "publicId2", "publicId3"].includes(key)
+    ([key]) => !["img", "img2", "img3"].includes(key)
   );
   const parsed = editProductSchema.parse(Object.fromEntries(entries));
 
