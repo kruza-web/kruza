@@ -1,26 +1,33 @@
 "use client"
 
 import { getProducts } from "@/_actions/actions"
+import { getAllProductsStockStatus } from "@/_actions/stock-actions"
 import { ProductCard } from "@/components/product-card"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
+import type { StockStatus } from "@/lib/check-stock"
 
 // Define the product type based on your data structure
 type Product = {
-    id: number;
-    title: string;
-    description: string | null;
-    img: string;
-    img2: string;
-    size: string;
-    price: number;
-    isRecommended: boolean;
-    category: string;
-    quantity?: number;
-  };
+  id: number
+  title: string
+  description: string | null
+  img: string
+  img2: string
+  size: string
+  price: number
+  discount?: number
+  isRecommended: boolean
+  category: string
+  quantity?: number
+  soldOut?: boolean
+}
+
+// Lista fija de todos los talles posibles
+const ALL_SIZES = ["XS", "S", "M", "L", "XL"]
 
 export default function Store() {
   const [products, setProducts] = useState<Product[]>([])
@@ -28,26 +35,51 @@ export default function Store() {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null)
-
-  // Available sizes extracted from products
-  const [availableSizes, setAvailableSizes] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
 
   // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
-      const fetchedProducts = await getProducts()
-      setProducts(fetchedProducts)
-      setFilteredProducts(fetchedProducts)
+      try {
+        setLoading(true)
+        // Obtener todos los productos
+        const fetchedProducts = await getProducts()
 
-      // Extract unique sizes from all products
-      const sizes = new Set<string>()
-      fetchedProducts.forEach((product) => {
-        if (product.size) {
-          const productSizes = product.size.split(",").map((s) => s.trim())
-          productSizes.forEach((size) => sizes.add(size))
-        }
-      })
-      setAvailableSizes(Array.from(sizes))
+        // Obtener el estado de stock de todos los productos
+        const stockStatus = await getAllProductsStockStatus()
+
+        // Crear un mapa para acceder rápidamente al estado de stock por ID de producto
+        const stockMap = new Map<number, StockStatus>()
+        stockStatus.forEach((status) => {
+          stockMap.set(status.productId, status)
+        })
+
+        // Combinar los productos con su información de stock
+        const productsWithStockInfo = fetchedProducts.map((product) => {
+          const stock = stockMap.get(product.id)
+          return {
+            ...product,
+            soldOut: stock ? stock.soldOut : true, // Si no hay información de stock, asumir agotado
+            discount: product.discount ?? 0,
+          }
+        })
+
+        setProducts(productsWithStockInfo)
+        setFilteredProducts(productsWithStockInfo)
+      } catch (error) {
+        console.error("Error fetching products:", error)
+        // En caso de error, mostrar los productos sin información de stock
+        const fetchedProducts = await getProducts()
+        const productsWithoutStock = fetchedProducts.map((product) => ({
+          ...product,
+          soldOut: false, // Asumir que hay stock para evitar mostrar todo como agotado
+          discount: product.discount ?? 0,
+        }))
+        setProducts(productsWithoutStock)
+        setFilteredProducts(productsWithoutStock)
+      } finally {
+        setLoading(false)
+      }
     }
 
     fetchProducts()
@@ -72,11 +104,19 @@ export default function Store() {
       result = result.filter((product) => product.category === categoryFilter)
     }
 
-    // Apply price sorting
+    // Apply price sorting - consider discounted prices
     if (priceSort === "asc") {
-      result = result.sort((a, b) => a.price - b.price)
+      result = result.sort((a, b) => {
+        const priceA = a.discount ? a.price - (a.price * (a.discount || 0)) / 100 : a.price
+        const priceB = b.discount ? b.price - (b.price * (b.discount || 0)) / 100 : b.price
+        return priceA - priceB
+      })
     } else if (priceSort === "desc") {
-      result = result.sort((a, b) => b.price - a.price)
+      result = result.sort((a, b) => {
+        const priceA = a.discount ? a.price - (a.price * (a.discount || 0)) / 100 : a.price
+        const priceB = b.discount ? b.price - (b.price * (b.discount || 0)) / 100 : b.price
+        return priceB - priceA
+      })
     }
 
     setFilteredProducts(result)
@@ -108,7 +148,7 @@ export default function Store() {
         <div className="md:w-1/2">
           <div className="mb-2 font-medium">Talles:</div>
           <div className="flex flex-wrap gap-2">
-            {availableSizes.map((size) => (
+            {ALL_SIZES.map((size) => (
               <label
                 key={size}
                 className={`inline-flex items-center px-3 py-1 rounded-md border cursor-pointer text-sm
@@ -168,8 +208,12 @@ export default function Store() {
         </div>
       </div>
 
-      {/* Products grid */}
-      {filteredProducts.length === 0 ? (
+      {/* Loading state */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-lg text-muted-foreground">Cargando productos...</p>
+        </div>
+      ) : filteredProducts.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-lg text-muted-foreground">No se encontraron productos con los filtros seleccionados.</p>
         </div>

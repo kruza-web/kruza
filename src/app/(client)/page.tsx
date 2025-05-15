@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 
 export default async function Home() {
   const products = await getProducts();
+
+   // Marcar productos como agotados si no tienen talles disponibles
+  const productsWithSoldOutFlag = products.map((product) => ({
+    ...product,
+    soldOut: !product.size || product.size.trim() === "",
+    discount: product.discount ?? 0,
+  }))
+
   return (
     <>
       {/* BANNER RESPONSIVE */}
@@ -37,13 +45,16 @@ export default async function Home() {
         <h1 className="mb-6">NUESTRA ROPITA</h1>
         <div >
           <ul className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-          {products.map((product) => ( product.isRecommended && (
-            <li key={product.id}>
-              <Link href={`/store/${product.id}`}>
-              <ProductCard products={product} />
-              </Link>
-            </li>
-          )))} 
+          {productsWithSoldOutFlag.map(
+              (product) =>
+                product.isRecommended && (
+                  <li key={product.id}>
+                    <Link href={`/store/${product.id}`}>
+                      <ProductCard products={product} />
+                    </Link>
+                  </li>
+                ),
+            )} 
           </ul>
         </div>
       </div>

@@ -18,6 +18,7 @@ export const Product = ({
   price,
   title,
   size,
+  discount,
   isRecommended,
   category,
 }: SelectProduct) => {
@@ -49,6 +50,7 @@ export const Product = ({
             img2={img2}
             img3={img3}
             size={size}
+            discount={discount}
             isRecommended={isRecommended}
             category={category}
           />

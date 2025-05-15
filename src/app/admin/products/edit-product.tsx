@@ -1,8 +1,8 @@
-"use client";
-import { editProduct } from "@/_actions/actions";
-import { SelectProduct } from "@/db/schema";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+"use client"
+import { editProduct } from "@/_actions/actions"
+import type { SelectProduct } from "@/db/schema"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -10,19 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Edit } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Submit } from "@/components/submit";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectValue,
-  SelectItem,
-} from "@/components/ui/select";
+} from "@/components/ui/dialog"
+import { Edit } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Submit } from "@/components/submit"
+import { Select, SelectTrigger, SelectContent, SelectValue, SelectItem } from "@/components/ui/select"
 
 export const EditProduct = ({
   id,
@@ -32,14 +26,16 @@ export const EditProduct = ({
   img2,
   img3,
   price,
+  discount = 0,
   size,
   isRecommended,
+  category,
 }: SelectProduct) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   const handleAction = async (formData: FormData) => {
-    await editProduct(formData);
-    setOpen(false);
-  };
+    await editProduct(formData)
+    setOpen(false)
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -51,20 +47,15 @@ export const EditProduct = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit products</DialogTitle>
-          <DialogDescription>
-            Edit your profile here.
-          </DialogDescription>
+          <DialogDescription>Edit your profile here.</DialogDescription>
         </DialogHeader>
         <form action={handleAction}>
           <div className="w-fullitems-center grid gap-1.5">
-            <Label
-              htmlFor="edit_title"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <Label htmlFor="edit_title" className="block text-sm font-medium text-gray-700">
               Título
             </Label>
             <Input
-                type="text"
+              type="text"
               name="title"
               id="edit_title"
               placeholder="Título del producto"
@@ -75,10 +66,7 @@ export const EditProduct = ({
           </div>
 
           <div>
-            <Label
-              htmlFor="edit_description"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <Label htmlFor="edit_description" className="block text-sm font-medium text-gray-700">
               Descripción
             </Label>
             <Input
@@ -93,29 +81,26 @@ export const EditProduct = ({
           </div>
 
           <div>
-          <Label htmlFor="category" className="block text-sm font-medium ">
-            Categoría
-          </Label>
-          <Select name="category" required>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="top" id="top">
-                Top
-              </SelectItem>
-              <SelectItem value="bottom" id="bottom">
-                Bottom
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <Label htmlFor="category" className="block text-sm font-medium ">
+              Categoría
+            </Label>
+            <Select name="category" defaultValue={category} required>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="top" id="top">
+                  Top
+                </SelectItem>
+                <SelectItem value="bottom" id="bottom">
+                  Bottom
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <div>
-            <Label
-              htmlFor="edit_price"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <Label htmlFor="edit_price" className="block text-sm font-medium text-gray-700">
               Precio
             </Label>
             <Input
@@ -130,10 +115,24 @@ export const EditProduct = ({
           </div>
 
           <div>
-            <Label
-              htmlFor="edit_picture"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <Label htmlFor="edit_discount" className="block text-sm font-medium text-gray-700">
+              Descuento (%)
+            </Label>
+            <Input
+              type="number"
+              name="discount"
+              id="edit_discount"
+              placeholder="0"
+              min="0"
+              max="100"
+              defaultValue={discount ?? 0}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+            <p className="text-xs text-gray-500 mt-1">Deja en blanco o 0 si no hay descuento</p>
+          </div>
+
+          <div>
+            <Label htmlFor="edit_picture" className="block text-sm font-medium text-gray-700">
               Imagen
             </Label>
             <Input
@@ -146,10 +145,7 @@ export const EditProduct = ({
           </div>
 
           <div>
-            <Label
-              htmlFor="edit_picture2"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <Label htmlFor="edit_picture2" className="block text-sm font-medium text-gray-700">
               Imagen
             </Label>
             <Input
@@ -162,10 +158,7 @@ export const EditProduct = ({
           </div>
 
           <div>
-            <Label
-              htmlFor="edit_picture3"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <Label htmlFor="edit_picture3" className="block text-sm font-medium text-gray-700">
               Imagen
             </Label>
             <Input
@@ -220,9 +213,9 @@ export const EditProduct = ({
           <input type="hidden" name="publicId2" value={img2} required />
           <input type="hidden" name="publicId3" value={img3} required />
           <input type="hidden" name="id" value={id} required />
-            <Submit className="w-full text-white py-2 px-4 rounded-md shadow-sm hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" />
+          <Submit className="w-full text-white py-2 px-4 rounded-md shadow-sm hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" />
         </form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

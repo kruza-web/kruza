@@ -2,10 +2,12 @@
 
 import { db } from "@/db"
 import { colorsTable, productVariantsTable, productsTable } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
+import { eq, and, sum } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import type { SelectColor, SelectProductVariant } from "@/db/schema"
+
+import type { StockStatus } from "@/lib/check-stock"
 
 // Obtener todos los colores
 export const getColors = async (): Promise<SelectColor[]> => {
@@ -130,3 +132,65 @@ export const reduceStock = async (variantId: number, quantity: number) => {
     .set({ stock: currentStock - quantity })
     .where(eq(productVariantsTable.id, variantId))
 }
+
+// Función para verificar si un producto está completamente agotado
+export async function isProductSoldOut(productId: number): Promise<boolean> {
+  // Obtener la suma total del stock para todas las variantes del producto
+  const result = await db
+    .select({ totalStock: sum(productVariantsTable.stock) })
+    .from(productVariantsTable)
+    .where(eq(productVariantsTable.productId, productId))
+
+  // Si no hay resultados o el total es 0, el producto está agotado
+  // Convertir explícitamente a número para evitar problemas de tipo
+  return !result.length || Number(result[0].totalStock) === 0 || result[0].totalStock === null
+}
+
+// Función para obtener el stock total de un producto
+export async function getProductTotalStock(productId: number): Promise<number> {
+  const result = await db
+    .select({ totalStock: sum(productVariantsTable.stock) })
+    .from(productVariantsTable)
+    .where(eq(productVariantsTable.productId, productId))
+
+  // Convertir explícitamente a número para evitar problemas de tipo
+  return result.length ? Number(result[0].totalStock) || 0 : 0
+}
+
+// Función para obtener el estado de stock de múltiples productos
+export async function getProductsStockStatus(productIds: number[]): Promise<StockStatus[]> {
+  if (!productIds.length) return []
+
+  // Crear un array de promesas para verificar el stock de cada producto
+  const stockPromises = productIds.map(async (id) => {
+    const totalStock = await getProductTotalStock(id)
+    return {
+      productId: id,
+      soldOut: totalStock === 0,
+      totalStock,
+    }
+  })
+
+  // Ejecutar todas las promesas en paralelo
+  return Promise.all(stockPromises)
+}
+
+// Función para verificar el stock de todos los productos
+export async function getAllProductsStockStatus(): Promise<StockStatus[]> {
+  // Obtener todos los productos con variantes
+  const variants = await db
+    .select({
+      productId: productVariantsTable.productId,
+      stock: sum(productVariantsTable.stock),
+    })
+    .from(productVariantsTable)
+    .groupBy(productVariantsTable.productId)
+
+  // Mapear los resultados al formato StockStatus
+  return variants.map((variant) => ({
+    productId: variant.productId,
+    soldOut: Number(variant.stock) === 0 || variant.stock === null,
+    totalStock: Number(variant.stock) || 0,
+  }))
+}
+

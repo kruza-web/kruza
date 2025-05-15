@@ -77,6 +77,22 @@ export const CreateProduct = () => {
         </div>
 
         <div>
+          <Label htmlFor="discount" className="block text-sm font-medium ">
+            Descuento (%)
+          </Label>
+          <Input
+            type="number"
+            name="discount"
+            id="discount"
+            placeholder="0"
+            min="0"
+            max="100"
+            className="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+          <p className="text-xs text-gray-500 mt-1">Deja en blanco o 0 si no hay descuento</p>
+        </div>
+
+        <div>
           <Label htmlFor="img" className="block text-sm font-medium ">
             Imagen #1
           </Label>

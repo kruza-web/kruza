@@ -17,7 +17,7 @@ export type CartItem = {
 
 type CartContextType = {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, "quantity">) => void
+  addItem: (item: Omit<CartItem, "quantity"> & {quantity?: number}) => void
   removeItem: (id: number, variantId?: number) => void
   updateQuantity: (id: number, quantity: number, variantId?: number) => void
   clearCart: () => void
@@ -57,32 +57,37 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, mounted])
 
-  // Add item to cart
-  const addItem = (newItem: Omit<CartItem, "quantity">) => {
+ // Add item to cart
+  const addItem = (newItem: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+    // Usar la cantidad proporcionada o 1 por defecto
+    const quantityToAdd = newItem.quantity || 1
+
     setItems((prevItems) => {
       // Si el producto tiene una variante, buscar por ID de producto y variante
       if (newItem.variantId) {
         const existingItem = prevItems.find((item) => item.id === newItem.id && item.variantId === newItem.variantId)
 
         if (existingItem) {
-          // Si el item ya existe, aumentar la cantidad
+          // Si el item ya existe, aumentar la cantidad según la cantidad seleccionada
           return prevItems.map((item) =>
             item.id === newItem.id && item.variantId === newItem.variantId
-              ? { ...item, quantity: item.quantity + 1 }
+              ? { ...item, quantity: item.quantity + quantityToAdd }
               : item,
           )
         } else {
-          // Si no existe, agregar nuevo item con cantidad 1
-          return [...prevItems, { ...newItem, quantity: 1 }]
+          // Si no existe, agregar nuevo item con la cantidad seleccionada
+          return [...prevItems, { ...newItem, quantity: quantityToAdd }]
         }
       } else {
         // Comportamiento anterior para productos sin variantes
         const existingItem = prevItems.find((item) => item.id === newItem.id)
 
         if (existingItem) {
-          return prevItems.map((item) => (item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item))
+          return prevItems.map((item) =>
+            item.id === newItem.id ? { ...item, quantity: item.quantity + quantityToAdd } : item,
+          )
         } else {
-          return [...prevItems, { ...newItem, quantity: 1 }]
+          return [...prevItems, { ...newItem, quantity: quantityToAdd }]
         }
       }
     })

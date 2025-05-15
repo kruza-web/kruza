@@ -123,33 +123,15 @@ function CartItem({
           <div>
             <h3 className="font-medium">{item.title}</h3>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {currency.format(item.price)}
+              {currency.format(item.price)} x {item.quantity} unidades
             </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={onRemove}
-            >
-              <Minus className="size-3" />
-            </Button>
-            <span className="w-6 text-center">{item.quantity}</span>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={onAdd}
-            >
-              <Plus className="size-3" />
-            </Button>
           </div>
         </div>
         <div className="flex items-center justify-between mt-1">
           <p className="text-sm font-medium">
             {currency.format(item.price * item.quantity)}
           </p>
+          
           <Button
             variant="ghost"
             size="sm"

@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { useCart } from "../providers/cart-provider"
 import { AlertCircle, CheckCircle, ShoppingCart } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import type { SelectProduct, SelectColor, SelectProductVariant } from "@/db/schema"
 import { currency } from "@/lib/utils"
 import { CldImage } from "next-cloudinary"
@@ -24,6 +25,19 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
   const [availableSizes, setAvailableSizes] = useState<string[]>([])
   const [currentStock, setCurrentStock] = useState<number>(0)
   const [stockStatus, setStockStatus] = useState<"available" | "low" | "out">("out")
+  const [quantity, setQuantity] = useState(1)
+  const [currentImage, setCurrentImage] = useState<string>(product.img)
+
+  // Calcular el precio con descuento
+  const discount = product.discount || 0
+  const discountedPrice = discount > 0 ? product.price - (product.price * discount) / 100 : product.price
+
+  // Filtrar solo los colores que tiene este producto
+  const productColorIds = [...new Set(variants.map((v) => v.colorId))]
+  const productColors = colors.filter((color) => productColorIds.includes(color.id))
+
+  // Verificar si hay variantes con stock disponible
+  const hasStock = variants.some((v) => v.stock > 0)
 
   // Cuando cambia el color seleccionado, actualizar los talles disponibles
   useEffect(() => {
@@ -57,6 +71,21 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
     }
   }, [selectedColor, selectedSize, variants])
 
+  // Inicializar el primer color con stock si existe
+  useEffect(() => {
+    if (productColors.length > 0 && !selectedColor) {
+      // Buscar el primer color que tenga stock
+      const colorWithStock = productColors.find((color) => variants.some((v) => v.colorId === color.id && v.stock > 0))
+
+      if (colorWithStock) {
+        setSelectedColor(colorWithStock.id)
+      } else if (productColors.length > 0) {
+        // Si no hay colores con stock, seleccionar el primero de todos modos
+        setSelectedColor(productColors[0].id)
+      }
+    }
+  }, [productColors, variants, selectedColor])
+
   const handleAddToCart = () => {
     if (selectedColor && selectedSize && currentStock > 0) {
       const variant = variants.find((v) => v.colorId === selectedColor && v.size === selectedSize)
@@ -67,11 +96,12 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
         addItem({
           id: product.id,
           title: `${product.title} - ${colorName} / ${selectedSize}`,
-          price: product.price,
+          price: discountedPrice, // Usar el precio con descuento
           img: product.img,
           size: selectedSize,
           color: selectedColor,
           variantId: variant.id,
+          quantity: quantity,
         })
       }
     }
@@ -103,10 +133,79 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
     }
   }
 
+  // Función para cambiar la imagen principal
+  const changeMainImage = (imageUrl: string) => {
+    setCurrentImage(imageUrl)
+  }
+
   return (
-    <div className="grid md:grid-cols-2 gap-6 lg:gap-12 items-start max-w-6xl px-4 mx-auto py-6">
-      <div className="grid gap-4 md:gap-10 items-start">
-        <div className="hidden md:flex items-start">
+    <div className="grid md:grid-cols-2 gap-6 lg:gap-24 items-start max-w-7xl px-4 mx-auto py-6">
+      {/* Columna de imágenes (ahora a la izquierda) */}
+      <div className="grid gap-3 items-start order-2 md:order-1">
+        <div className="grid gap-4">
+          <div className="relative">
+            {!hasStock && (
+              <div className="absolute bottom-0 right-0 left-0 bg-black bg-opacity-60 py-2 text-center z-10">
+                <span className="text-white font-semibold">AGOTADO</span>
+              </div>
+            )}
+            <CldImage
+              src={currentImage}
+              alt="Product image"
+              width={600}
+              height={600}
+              className="aspect-square object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
+            />
+          </div>
+          <div className="flex gap-4 items-start justify-center">
+            <button
+              className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
+              onClick={() => changeMainImage(product.img)}
+            >
+              <CldImage
+                src={product.img}
+                alt="Preview thumbnail"
+                width={100}
+                height={100}
+                className={`aspect-square object-cover ${currentImage === product.img ? "border-2 border-primary" : ""}`}
+              />
+              <span className="sr-only">View Image 1</span>
+            </button>
+            <button
+              className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
+              onClick={() => changeMainImage(product.img2)}
+            >
+              <CldImage
+                src={product.img2}
+                alt="Preview thumbnail"
+                width={100}
+                height={100}
+                className={`aspect-square object-cover ${currentImage === product.img2 ? "border-2 border-primary" : ""}`}
+              />
+              <span className="sr-only">View Image 2</span>
+            </button>
+            {product.img3 && (
+              <button
+                className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
+                onClick={() => changeMainImage(product.img3)}
+              >
+                <CldImage
+                  src={product.img3}
+                  alt="Preview thumbnail"
+                  width={100}
+                  height={100}
+                  className={`aspect-square object-cover ${currentImage === product.img3 ? "border-2 border-primary" : ""}`}
+                />
+                <span className="sr-only">View Image 3</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Columna de información (ahora a la derecha) */}
+      <div className="grid gap-4 md:gap-10 items-start order-1 md:order-2">
+        <div className="items-start">
           <div className="grid gap-4">
             <h1 className="font-bold text-3xl">{product.title}</h1>
             <div className="flex items-center gap-4"></div>
@@ -114,9 +213,19 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               <p>{product.description}</p>
             </div>
           </div>
-          <div className="text-4xl font-bold ml-auto">{currency.format(product.price)}</div>
+          <div className="text-4xl font-bold mt-4">
+            {discount > 0 ? (
+              <div className="flex flex-col">
+                <span className="text-lg text-gray-400 line-through">{currency.format(product.price)}</span>
+                <span className="text-red-500">{currency.format(discountedPrice)}</span>
+                <Badge className="mt-1 bg-red-500 w-fit">{discount}% OFF</Badge>
+              </div>
+            ) : (
+              currency.format(product.price)
+            )}
+          </div>
         </div>
-        <form className="grid gap-4 md:gap-10">
+        <form className="grid gap-4 md:gap-6">
           <div className="grid gap-2">
             <Label htmlFor="color" className="text-base">
               Color
@@ -126,20 +235,28 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               value={selectedColor?.toString() || ""}
               onValueChange={(value) => setSelectedColor(Number.parseInt(value))}
               className="flex flex-wrap items-center gap-2"
+              disabled={!hasStock}
             >
-              {colors.map((color) => (
-                <Label
-                  key={color.id}
-                  htmlFor={`color-${color.id}`}
-                  className="border cursor-pointer rounded-md p-2 flex items-center gap-2 [&:has(:checked)]:bg-gray-100 dark:[&:has(:checked)]:bg-gray-800"
-                >
-                  <RadioGroupItem id={`color-${color.id}`} value={color.id.toString()} />
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color.hexCode }}></div>
-                    {color.name}
-                  </div>
-                </Label>
-              ))}
+              {productColors.map((color) => {
+                // Verificar si hay stock para este color
+                const hasColorStock = variants.some((v) => v.colorId === color.id && v.stock > 0)
+
+                return (
+                  <Label
+                    key={color.id}
+                    htmlFor={`color-${color.id}`}
+                    className={`border cursor-pointer rounded-md p-2 flex items-center gap-2 [&:has(:checked)]:bg-gray-100 dark:[&:has(:checked)]:bg-gray-800 ${
+                      !hasColorStock ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <RadioGroupItem id={`color-${color.id}`} value={color.id.toString()} disabled={!hasColorStock} />
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color.hexCode }}></div>
+                      {color.name}
+                    </div>
+                  </Label>
+                )
+              })}
             </RadioGroup>
           </div>
 
@@ -180,16 +297,27 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
 
           {selectedColor && selectedSize && <div className="mt-2">{getStockMessage()}</div>}
 
+          {!hasStock && (
+            <div className="flex items-center text-red-600 mt-2">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              <span>Producto agotado en todos los colores y talles</span>
+            </div>
+          )}
+
           <div className="grid gap-2">
             <Label htmlFor="quantity" className="text-base">
               Cantidad
             </Label>
-            <Select defaultValue="1" disabled={currentStock === 0}>
+            <Select
+              value={quantity.toString()}
+              onValueChange={(value) => setQuantity(Number.parseInt(value))}
+              disabled={currentStock === 0}
+            >
               <SelectTrigger className="w-24">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
-                {[...Array(Math.min(currentStock, 5))].map((_, i) => (
+                {[...Array(currentStock)].map((_, i) => (
                   <SelectItem key={i + 1} value={(i + 1).toString()}>
                     {i + 1}
                   </SelectItem>
@@ -205,67 +333,12 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             className="mt-4"
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
-            Agregar al carrito
+            {!hasStock ? "Agotado" : "Agregar al carrito"}
           </Button>
         </form>
         <Separator />
         <div className="grid gap-4 text-sm leading-loose">
           <p>{product.description}</p>
-        </div>
-      </div>
-      <div className="grid gap-3 items-start">
-        <div className="flex md:hidden items-start">
-          <div className="grid gap-4">
-            <h1 className="font-bold text-2xl sm:text-3xl">{product.title}</h1>
-            <div>
-              <p>{product.description}</p>
-            </div>
-            <div className="flex items-center gap-4"></div>
-          </div>
-          <div className="text-4xl font-bold ml-auto">{currency.format(product.price)}</div>
-        </div>
-        <div className="grid gap-4">
-          <CldImage
-            src={product.img}
-            alt="Product image"
-            width={600}
-            height={600}
-            className="aspect-square object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
-          />
-          <div className="hidden md:flex gap-4 items-start">
-            <button className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50">
-              <CldImage
-                src={product.img2}
-                alt="Preview thumbnail"
-                width={100}
-                height={100}
-                className="aspect-square object-cover"
-              />
-              <span className="sr-only">View Image 1</span>
-            </button>
-            {product.img3 && (
-              <button className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50">
-                <CldImage
-                  src={product.img3}
-                  alt="Preview thumbnail"
-                  width={100}
-                  height={100}
-                  className="aspect-square object-cover"
-                />
-                <span className="sr-only">View Image 2</span>
-              </button>
-            )}
-            <button className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50">
-              <CldImage
-                src={product.img}
-                alt="Preview thumbnail"
-                width={100}
-                height={100}
-                className="aspect-square object-cover"
-              />
-              <span className="sr-only">View Image 3</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>
