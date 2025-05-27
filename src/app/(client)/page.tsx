@@ -18,7 +18,7 @@ export default async function Home() {
   return (
     <>
       {/* BANNER RESPONSIVE */}
-      <div className="w-full overflow-hidden">
+      <div className="pt-10 w-full overflow-hidden">
         {/* DESKTOP & TABLET */}
         <div className="hidden sm:block w-full h-[400px] relative lg:h-[1080px]">
           <Image

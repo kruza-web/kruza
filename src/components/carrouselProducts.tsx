@@ -11,6 +11,7 @@ import { ProductCard } from "./product-card";
 
 export const CarrouselProducts = async () => {
   const products = await getProducts();
+
   return (
     <Carousel
       opts={{

@@ -1,97 +1,130 @@
-"use client"
-import { useState, useEffect } from "react"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { useCart } from "../providers/cart-provider"
-import { AlertCircle, CheckCircle, ShoppingCart } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import type { SelectProduct, SelectColor, SelectProductVariant } from "@/db/schema"
-import { currency } from "@/lib/utils"
-import { CldImage } from "next-cloudinary"
+"use client";
+import { useState, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useCart } from "../providers/cart-provider";
+import { AlertCircle, CheckCircle, ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import type {
+  SelectProduct,
+  SelectColor,
+  SelectProductVariant,
+} from "@/db/schema";
+import { currency } from "@/lib/utils";
+import { CldImage } from "next-cloudinary";
+import { useSession } from "next-auth/react";
 
 interface ProductDetailProps {
-  product: SelectProduct
-  colors: SelectColor[]
-  variants: SelectProductVariant[]
+  product: SelectProduct;
+  colors: SelectColor[];
+  variants: SelectProductVariant[];
 }
 
-export const ProductDetail = ({ product, colors, variants }: ProductDetailProps) => {
-  const { addItem } = useCart()
-  const [selectedColor, setSelectedColor] = useState<number | null>(null)
-  const [selectedSize, setSelectedSize] = useState<string | null>(null)
-  const [availableSizes, setAvailableSizes] = useState<string[]>([])
-  const [currentStock, setCurrentStock] = useState<number>(0)
-  const [stockStatus, setStockStatus] = useState<"available" | "low" | "out">("out")
-  const [quantity, setQuantity] = useState(1)
-  const [currentImage, setCurrentImage] = useState<string>(product.img)
+export const ProductDetail = ({
+  product,
+  colors,
+  variants,
+}: ProductDetailProps) => {
+  const { addItem } = useCart();
+  const [selectedColor, setSelectedColor] = useState<number | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+  const [currentStock, setCurrentStock] = useState<number>(0);
+  const [stockStatus, setStockStatus] = useState<"available" | "low" | "out">(
+    "out"
+  );
+  const [quantity, setQuantity] = useState(1);
+  const [currentImage, setCurrentImage] = useState<string>(product.img);
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated";
 
   // Calcular el precio con descuento
-  const discount = product.discount || 0
-  const discountedPrice = discount > 0 ? product.price - (product.price * discount) / 100 : product.price
+  const discount = product.discount || 0;
+  const discountedPrice =
+    discount > 0
+      ? product.price - (product.price * discount) / 100
+      : product.price;
 
   // Filtrar solo los colores que tiene este producto
-  const productColorIds = [...new Set(variants.map((v) => v.colorId))]
-  const productColors = colors.filter((color) => productColorIds.includes(color.id))
+  const productColorIds = [...new Set(variants.map((v) => v.colorId))];
+  const productColors = colors.filter((color) =>
+    productColorIds.includes(color.id)
+  );
 
   // Verificar si hay variantes con stock disponible
-  const hasStock = variants.some((v) => v.stock > 0)
+  const hasStock = variants.some((v) => v.stock > 0);
 
   // Cuando cambia el color seleccionado, actualizar los talles disponibles
   useEffect(() => {
     if (selectedColor) {
-      const sizesForColor = variants.filter((v) => v.colorId === selectedColor && v.stock > 0).map((v) => v.size)
+      const sizesForColor = variants
+        .filter((v) => v.colorId === selectedColor && v.stock > 0)
+        .map((v) => v.size);
 
-      setAvailableSizes(sizesForColor)
-      setSelectedSize(null) // Resetear el talle seleccionado
-      setCurrentStock(0)
-      setStockStatus("out")
+      setAvailableSizes(sizesForColor);
+      setSelectedSize(null); // Resetear el talle seleccionado
+      setCurrentStock(0);
+      setStockStatus("out");
     }
-  }, [selectedColor, variants])
+  }, [selectedColor, variants]);
 
   // Cuando cambia el talle seleccionado, actualizar el stock disponible
   useEffect(() => {
     if (selectedColor && selectedSize) {
-      const variant = variants.find((v) => v.colorId === selectedColor && v.size === selectedSize)
+      const variant = variants.find(
+        (v) => v.colorId === selectedColor && v.size === selectedSize
+      );
 
       if (variant) {
-        setCurrentStock(variant.stock)
+        setCurrentStock(variant.stock);
 
         // Determinar el estado del stock
         if (variant.stock === 0) {
-          setStockStatus("out")
+          setStockStatus("out");
         } else if (variant.stock <= 5) {
-          setStockStatus("low")
+          setStockStatus("low");
         } else {
-          setStockStatus("available")
+          setStockStatus("available");
         }
       }
     }
-  }, [selectedColor, selectedSize, variants])
+  }, [selectedColor, selectedSize, variants]);
 
   // Inicializar el primer color con stock si existe
   useEffect(() => {
     if (productColors.length > 0 && !selectedColor) {
       // Buscar el primer color que tenga stock
-      const colorWithStock = productColors.find((color) => variants.some((v) => v.colorId === color.id && v.stock > 0))
+      const colorWithStock = productColors.find((color) =>
+        variants.some((v) => v.colorId === color.id && v.stock > 0)
+      );
 
       if (colorWithStock) {
-        setSelectedColor(colorWithStock.id)
+        setSelectedColor(colorWithStock.id);
       } else if (productColors.length > 0) {
         // Si no hay colores con stock, seleccionar el primero de todos modos
-        setSelectedColor(productColors[0].id)
+        setSelectedColor(productColors[0].id);
       }
     }
-  }, [productColors, variants, selectedColor])
+  }, [productColors, variants, selectedColor]);
 
   const handleAddToCart = () => {
     if (selectedColor && selectedSize && currentStock > 0) {
-      const variant = variants.find((v) => v.colorId === selectedColor && v.size === selectedSize)
+      const variant = variants.find(
+        (v) => v.colorId === selectedColor && v.size === selectedSize
+      );
 
       if (variant) {
-        const colorName = colors.find((c) => c.id === selectedColor)?.name || ""
+        const colorName =
+          colors.find((c) => c.id === selectedColor)?.name || "";
 
         addItem({
           id: product.id,
@@ -102,10 +135,10 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
           color: selectedColor,
           variantId: variant.id,
           quantity: quantity,
-        })
+        });
       }
     }
-  }
+  };
 
   const getStockMessage = () => {
     switch (stockStatus) {
@@ -115,28 +148,28 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             <CheckCircle className="w-4 h-4 mr-1" />
             <span>En stock ({currentStock} disponibles)</span>
           </div>
-        )
+        );
       case "low":
         return (
           <div className="flex items-center text-amber-600">
             <AlertCircle className="w-4 h-4 mr-1" />
             <span>¡Últimas unidades! ({currentStock} disponibles)</span>
           </div>
-        )
+        );
       case "out":
         return (
           <div className="flex items-center text-red-600">
             <AlertCircle className="w-4 h-4 mr-1" />
             <span>Agotado</span>
           </div>
-        )
+        );
     }
-  }
+  };
 
   // Función para cambiar la imagen principal
   const changeMainImage = (imageUrl: string) => {
-    setCurrentImage(imageUrl)
-  }
+    setCurrentImage(imageUrl);
+  };
 
   return (
     <div className="grid md:grid-cols-2 gap-6 lg:gap-24 items-start max-w-7xl px-4 mx-auto py-6">
@@ -167,7 +200,9 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
                 alt="Preview thumbnail"
                 width={100}
                 height={100}
-                className={`aspect-square object-cover ${currentImage === product.img ? "border-2 border-primary" : ""}`}
+                className={`aspect-square object-cover ${
+                  currentImage === product.img ? "border-2 border-primary" : ""
+                }`}
               />
               <span className="sr-only">View Image 1</span>
             </button>
@@ -180,7 +215,9 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
                 alt="Preview thumbnail"
                 width={100}
                 height={100}
-                className={`aspect-square object-cover ${currentImage === product.img2 ? "border-2 border-primary" : ""}`}
+                className={`aspect-square object-cover ${
+                  currentImage === product.img2 ? "border-2 border-primary" : ""
+                }`}
               />
               <span className="sr-only">View Image 2</span>
             </button>
@@ -194,7 +231,11 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
                   alt="Preview thumbnail"
                   width={100}
                   height={100}
-                  className={`aspect-square object-cover ${currentImage === product.img3 ? "border-2 border-primary" : ""}`}
+                  className={`aspect-square object-cover ${
+                    currentImage === product.img3
+                      ? "border-2 border-primary"
+                      : ""
+                  }`}
                 />
                 <span className="sr-only">View Image 3</span>
               </button>
@@ -216,8 +257,12 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
           <div className="text-4xl font-bold mt-4">
             {discount > 0 ? (
               <div className="flex flex-col">
-                <span className="text-lg text-gray-400 line-through">{currency.format(product.price)}</span>
-                <span className="text-red-500">{currency.format(discountedPrice)}</span>
+                <span className="text-lg text-gray-400 line-through">
+                  {currency.format(product.price)}
+                </span>
+                <span className="text-red-500">
+                  {currency.format(discountedPrice)}
+                </span>
                 <Badge className="mt-1 bg-red-500 w-fit">{discount}% OFF</Badge>
               </div>
             ) : (
@@ -233,13 +278,17 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             <RadioGroup
               id="color"
               value={selectedColor?.toString() || ""}
-              onValueChange={(value) => setSelectedColor(Number.parseInt(value))}
+              onValueChange={(value) =>
+                setSelectedColor(Number.parseInt(value))
+              }
               className="flex flex-wrap items-center gap-2"
               disabled={!hasStock}
             >
               {productColors.map((color) => {
                 // Verificar si hay stock para este color
-                const hasColorStock = variants.some((v) => v.colorId === color.id && v.stock > 0)
+                const hasColorStock = variants.some(
+                  (v) => v.colorId === color.id && v.stock > 0
+                );
 
                 return (
                   <Label
@@ -249,13 +298,20 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
                       !hasColorStock ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    <RadioGroupItem id={`color-${color.id}`} value={color.id.toString()} disabled={!hasColorStock} />
+                    <RadioGroupItem
+                      id={`color-${color.id}`}
+                      value={color.id.toString()}
+                      disabled={!hasColorStock}
+                    />
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color.hexCode }}></div>
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: color.hexCode }}
+                      ></div>
                       {color.name}
                     </div>
                   </Label>
-                )
+                );
               })}
             </RadioGroup>
           </div>
@@ -272,15 +328,17 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               disabled={!selectedColor || availableSizes.length === 0}
             >
               {product.size.split(",").map((size) => {
-                const sizeValue = size.trim()
-                const isAvailable = availableSizes.includes(sizeValue)
+                const sizeValue = size.trim();
+                const isAvailable = availableSizes.includes(sizeValue);
 
                 return (
                   <Label
                     key={sizeValue}
                     htmlFor={`size-${sizeValue}`}
                     className={`border cursor-pointer rounded-md p-2 flex items-center gap-2 [&:has(:checked)]:bg-gray-100 dark:[&:has(:checked)]:bg-gray-800 ${
-                      !isAvailable && selectedColor ? "opacity-50 cursor-not-allowed" : ""
+                      !isAvailable && selectedColor
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
                     }`}
                   >
                     <RadioGroupItem
@@ -290,12 +348,14 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
                     />
                     {sizeValue}
                   </Label>
-                )
+                );
               })}
             </RadioGroup>
           </div>
 
-          {selectedColor && selectedSize && <div className="mt-2">{getStockMessage()}</div>}
+          {selectedColor && selectedSize && (
+            <div className="mt-2">{getStockMessage()}</div>
+          )}
 
           {!hasStock && (
             <div className="flex items-center text-red-600 mt-2">
@@ -326,15 +386,22 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             </Select>
           </div>
 
-          <Button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={!selectedColor || !selectedSize || currentStock === 0}
-            className="mt-4"
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            {!hasStock ? "Agotado" : "Agregar al carrito"}
-          </Button>
+          {isAuthenticated ? (
+            <Button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!selectedColor || !selectedSize || currentStock === 0}
+              className="mt-4"
+            >
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              {!hasStock ? "Agotado" : "Agregar al carrito"}
+            </Button>
+          ) : (
+            <Button type="button" disabled className="mt-4">
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              {"Debes iniciar sesión para agregar al carrito"}
+            </Button>
+          )}
         </form>
         <Separator />
         <div className="grid gap-4 text-sm leading-loose">
@@ -342,5 +409,5 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

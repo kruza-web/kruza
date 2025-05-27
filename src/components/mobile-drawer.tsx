@@ -20,7 +20,7 @@ export const MobileDrawer = () => {
   return (
     <Drawer modal={false} open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild className="md:hidden">
-        <Button variant="outline" size={"icon"}>
+        <Button variant="ghost" size={"icon"}>
           <span className="sr-only">options</span>
           <Menu />
         </Button>

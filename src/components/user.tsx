@@ -24,7 +24,7 @@ export async function User(){
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="ghost" size="icon">
           <User2 />
         </Button>
       </DropdownMenuTrigger>

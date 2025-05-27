@@ -49,7 +49,7 @@ export default function SearchBar({products}: {products: Product[]}) {
           value={searchQuery}
           onChange={handleSearch}
           onFocus={handleFocus}
-          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:placeholder-white"
         />
         <Button type="submit" size="icon" variant="ghost" className="rounded-full">
           <Search className="h-5 w-5" />
