@@ -30,6 +30,7 @@ export const productsTable = sqliteTable("products", {
   img: text("img").notNull(),
   img2: text("img2").notNull(),
   img3: text("img3").notNull(),
+  img4: text("img4").notNull(),
   size: text("size").notNull(), // Mantenemos este campo para compatibilidad
   price: integer("price").notNull(),
   discount: integer("discount").default(0),
@@ -143,6 +144,7 @@ export const productSchema = z.object({
   img: z.instanceof(File).optional(),
   img2: z.instanceof(File).optional(),
   img3: z.instanceof(File).optional(),
+  img4: z.instanceof(File).optional(),
   discount: z.string().optional(),
   isRecommended: z.string().optional(),
   category: z.enum(["top", "bottom"]),
@@ -155,6 +157,7 @@ export const editProductSchema = z.object({
   img: z.instanceof(File).optional(),
   img2: z.instanceof(File).optional(),
   img3: z.instanceof(File).optional(),
+  img4: z.instanceof(File).optional(),
   publicId: z.string(),
   publicId2: z.string(),
   publicId3: z.string(),

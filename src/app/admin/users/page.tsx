@@ -12,7 +12,9 @@ export default async function Page() {
         </div>
 
         <div>
+            <div className="container mx-auto py-10">
             <UsersTable data={data} />
+            </div>
         </div>
         </>
     );

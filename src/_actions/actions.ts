@@ -98,9 +98,10 @@ export const createProduct = async (formData: FormData) => {
   const file = formData.get("img") as File | null;
   const file2 = formData.get("img2") as File | null;
   const file3 = formData.get("img3") as File | null;
+  const file4 = formData.get("img4") as File | null;
 
   const entries = Array.from(formData.entries()).filter(
-    ([key]) => !["img", "img2", "img3"].includes(key)
+    ([key]) => !["img", "img2", "img3", "img4"].includes(key)
   );
   const parsed = productSchema.parse(Object.fromEntries(entries));
 
@@ -110,6 +111,7 @@ export const createProduct = async (formData: FormData) => {
   let publicId = "";
   let publicId2 = "";
   let publicId3 = "";
+  let publicId4 = "";
 
   if (file instanceof File && file.size > 0) {
     const { signature, timestamp } = getSignature();
@@ -129,11 +131,19 @@ export const createProduct = async (formData: FormData) => {
     publicId3 = data.public_id;
   }
 
+  if (file4 instanceof File && file4.size > 0) {
+    const { signature, timestamp } = getSignature();
+    const data = await uploadFile({ file: file4, signature, timestamp });
+    publicId4 = data.public_id;
+  }
+
+
   await db.insert(productsTable).values({
     ...rest,
     img: publicId,
     img2: publicId2,
     img3: publicId3,
+    img4: publicId4,
     isRecommended: Boolean(isRecommended),
     size: sizes.join(", "),
     price: Number(price),
@@ -143,12 +153,13 @@ export const createProduct = async (formData: FormData) => {
 };
 
 export const deleteProduct = async (formData: FormData) => {
-  const { id, img, img2, img3 } = z
+  const { id, img, img2, img3, img4 } = z
     .object({
       id: z.string(),
       img: z.string(),
       img2: z.string(),
       img3: z.string(),
+      img4: z.string(),
     })
     .parse(Object.fromEntries(formData));
 
@@ -167,6 +178,7 @@ export const deleteProduct = async (formData: FormData) => {
     cloudinary.uploader.destroy(img),
     cloudinary.uploader.destroy(img2),
     cloudinary.uploader.destroy(img3),
+    cloudinary.uploader.destroy(img4),
   ]);
   revalidatePath("/");
 };
@@ -175,14 +187,16 @@ export const editProduct = async (formData: FormData) => {
   const file = formData.get("img") as File | null;
   const file2 = formData.get("img2") as File | null;
   const file3 = formData.get("img3") as File | null;
+  const file4 = formData.get("img4") as File | null;
 
   const origPublicId = formData.get("publicId") as string;
   const origPublicId2 = formData.get("publicId2") as string;
   const origPublicId3 = formData.get("publicId3") as string;
+  const origPublicId4 = formData.get("publicId4") as string;
 
   const entries = Array.from(formData.entries()).filter(
     ([key]) =>
-      !["img", "img2", "img3", "publicId", "publicId2", "publicId3"].includes(
+      !["img", "img2", "img3", "img4", "publicId", "publicId2", "publicId3","publicId4"].includes(
         key
       )
   );
@@ -196,6 +210,7 @@ export const editProduct = async (formData: FormData) => {
   let newPublicId = origPublicId;
   let newPublicId2 = origPublicId2;
   let newPublicId3 = origPublicId3;
+  let newPublicId4 = origPublicId4;
 
   if (file instanceof File && file.size > 0 && origPublicId) {
     cloudinary.uploader.destroy(origPublicId);
@@ -226,6 +241,17 @@ export const editProduct = async (formData: FormData) => {
     newPublicId3 = public_id;
   }
 
+  if (file4 instanceof File && file4.size > 0 && origPublicId4) {
+    cloudinary.uploader.destroy(origPublicId4);
+    const { signature, timestamp } = getSignature();
+    const { public_id } = await uploadFile({
+      file: file4,
+      signature,
+      timestamp,
+    });
+    newPublicId4 = public_id;
+  }
+
   await db
     .update(productsTable)
     .set({
@@ -236,6 +262,7 @@ export const editProduct = async (formData: FormData) => {
       img: newPublicId,
       img2: newPublicId2,
       img3: newPublicId3,
+      img4: newPublicId4,
       price: Number(price),
       discount: discount ? Number(discount) : 0, // Manejar el campo de descuento
       size: sizes.join(", "),
@@ -320,4 +347,37 @@ export const getProductById = async (id: string) => {
   });
   if (!product) throw new Error("Product not found");
   return product;
+};
+
+export const editUser = async (formData: FormData) => {
+  const { id, streetNumber, dni, ...data } = z
+    .object({
+      id: z.string(),
+      phone: z.string(),
+      dni: z.string().optional(),
+      postalCode: z.string().optional(),
+      street: z.string().optional(),
+      streetNumber: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      indications: z.string().optional(),
+    })
+    .parse(Object.fromEntries(formData));
+
+  await db
+    .update(usersTable)
+    .set({
+      streetNumber: streetNumber ? parseInt(streetNumber) : null,
+      dni: dni ? parseInt(dni) : null,
+      ...data,
+    })
+    .where(eq(usersTable.id, parseInt(id)));
+  revalidatePath("/");
+};
+
+export const getUserOrders = async (userId: number) => {
+  return await db.query.usersToProducts.findMany({
+    with: { product: true, user: true },
+    where: eq(usersToProducts.userId, userId),
+  });
 };

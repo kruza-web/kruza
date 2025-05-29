@@ -16,10 +16,10 @@ export default async function RootLayout({
   const email = await user?.email
   return (
     <>
-      <header className="fixed z-50 w-full backdrop-blur bg-white/10 dark:bg-zinc-950/10 transition-colors">
+      <header className="fixed z-50 w-full text-2xl backdrop-blur bg-white/10 dark:bg-zinc-950/10 transition-colors">
         <div className="flex items-center gap-10 justify-end py-4 md:justify-between mx-4">
           <Link href={"/"} className="ml-4 hidden md:block">
-            K3Y-SHOP
+            KRUZA
           </Link>
             <Nav />
           <div className="flex items-center space-x-3">
@@ -40,7 +40,7 @@ export default async function RootLayout({
         </div>
         </div>
         <div className="flex items-center justify-center text-sm text-muted-foreground">
-          <p>© 2023 K3Y-SHOP. Todos los derechos reservados.</p>
+          <p>© 2023 KRUZA. Todos los derechos reservados.</p>
         </div>  
         </footer>
     </>

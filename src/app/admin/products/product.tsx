@@ -15,6 +15,7 @@ export const Product = ({
   img,
   img2,
   img3,
+  img4,
   price,
   title,
   size,
@@ -49,12 +50,13 @@ export const Product = ({
             img={img}
             img2={img2}
             img3={img3}
+            img4={img4}
             size={size}
             discount={discount}
             isRecommended={isRecommended}
             category={category}
           />
-          <DeleteProduct id={id} img={img} img2={img2} img3={img3}/>
+          <DeleteProduct id={id} img={img} img2={img2} img3={img3} img4={img4}/>
         </div>
       </CardContent>
     </Card>

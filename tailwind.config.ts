@@ -25,6 +25,9 @@ export const config: Config = {
       screens: {
         "2xl": "1400px",
       },
+      fontFamily: {
+        playfair: ['var(--font-playfair)'],
+      },
       colors: {
         border: "oklch(var(--border))",
         input: "oklch(var(--input))",

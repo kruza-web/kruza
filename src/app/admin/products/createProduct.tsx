@@ -121,7 +121,7 @@ export const CreateProduct = () => {
         </div>
 
         <div>
-          <Label htmlFor="img2" className="block text-sm font-medium ">
+          <Label htmlFor="img3" className="block text-sm font-medium ">
             Imagen #3
           </Label>
           <Input
@@ -129,7 +129,19 @@ export const CreateProduct = () => {
             name="img3"
             id="picture"
             accept="image/*"
-            required
+            className="mt-1 block w-full text-sm file:mr-4 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-300"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="img4" className="block text-sm font-medium ">
+            Imagen #4
+          </Label>
+          <Input
+            type="file"
+            name="img4"
+            id="picture"
+            accept="image/*"
             className="mt-1 block w-full text-sm file:mr-4 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-300"
           />
         </div>
