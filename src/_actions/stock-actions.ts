@@ -194,3 +194,28 @@ export async function getAllProductsStockStatus(): Promise<StockStatus[]> {
   }))
 }
 
+// Eliminar una variante de producto
+export const deleteProductVariant = async (variantId: number) => {
+  try {
+    // Obtener información de la variante antes de eliminarla para revalidar las rutas correctas
+    const variant = await db.select().from(productVariantsTable).where(eq(productVariantsTable.id, variantId))
+
+    if (variant.length === 0) {
+      throw new Error("Variante no encontrada")
+    }
+
+    const productId = variant[0].productId
+
+    // Eliminar la variante
+    await db.delete(productVariantsTable).where(eq(productVariantsTable.id, variantId))
+
+    // Revalidar las rutas para actualizar la UI
+    revalidatePath(`/admin/products/${productId}/stock`)
+    revalidatePath(`/store/${productId}`)
+    revalidatePath("/store")
+  } catch (error) {
+    console.error("Error al eliminar la variante:", error)
+    throw new Error("No se pudo eliminar la variante de stock")
+  }
+}
+

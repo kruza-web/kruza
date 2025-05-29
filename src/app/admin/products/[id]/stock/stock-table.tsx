@@ -3,8 +3,20 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { updateProductStock } from "@/_actions/stock-actions"
+import { updateProductStock, deleteProductVariant } from "@/_actions/stock-actions"
 import { useState } from "react"
+import { Trash2, Edit, Save, X } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import type { SelectProductVariant, SelectColor } from "@/db/schema"
 
 interface StockTableProps {
@@ -45,6 +57,10 @@ export const StockTable = ({ variants, colors }: StockTableProps) => {
     setEditMode({ ...editMode, [variant.id]: false })
   }
 
+  const handleDelete = async (variant: SelectProductVariant) => {
+    await deleteProductVariant(variant.id)
+  }
+
   const getColorName = (colorId: number) => {
     const color = colors.find((c) => c.id === colorId)
     return color ? color.name : "Desconocido"
@@ -63,7 +79,7 @@ export const StockTable = ({ variants, colors }: StockTableProps) => {
             <TableHead>Color</TableHead>
             <TableHead>Talle</TableHead>
             <TableHead>Stock</TableHead>
-            <TableHead>Acciones</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -99,20 +115,50 @@ export const StockTable = ({ variants, colors }: StockTableProps) => {
                     <span className={variant.stock === 0 ? "text-red-500 font-bold" : ""}>{variant.stock}</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-right">
                   {editMode[variant.id] ? (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 justify-end">
                       <Button size="sm" onClick={() => handleSave(variant)}>
-                        Guardar
+                        <Save className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => handleCancel(variant.id)}>
-                        Cancelar
+                        <X className="h-4 w-4" />
                       </Button>
                     </div>
                   ) : (
-                    <Button size="sm" onClick={() => handleEdit(variant.id, variant.stock)}>
-                      Editar
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(variant.id, variant.stock)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción eliminará permanentemente la variante de stock para{" "}
+                              <strong>
+                                {getColorName(variant.colorId)} - {variant.size}
+                              </strong>
+                              . Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(variant)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>

@@ -21,16 +21,16 @@ export const CarrouselProducts = async () => {
     >
       <CarouselContent>
         {products.map((product) => (
-          <Link key={product.id} href={`/store/${product.id}`}>
-            <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+          <CarouselItem key={product.id} className="sm:basis-1/2 lg:basis-1/3">
+            <Link href={`/store/${product.id}`} className="block group">
               <ProductCard
                 products={{
                   ...product,
                   discount: product.discount ?? 0,
                 }}
               />
-            </CarouselItem>
-          </Link>
+            </Link>
+          </CarouselItem>
         ))}
       </CarouselContent>
       {products.length > 3 && (

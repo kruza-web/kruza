@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${playfairDisplay.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased w-full`}
+        className={`${playfairDisplay.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased w-full `}
       >
         <Providers>
           {children}

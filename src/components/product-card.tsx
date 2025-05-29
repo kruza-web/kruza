@@ -29,14 +29,14 @@ export function ProductCard({ products }: { products: Product }) {
   return (
     <>
       <div
-        className="relative w-full h-[500px] overflow-hidden rounded-t-lg cursor-pointer group"
+        className="relative w-full h-[600px] overflow-hidden rounded-t-lg cursor-pointer group"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {discount > 0 && <Badge className="absolute top-2 right-2 z-10 bg-red-500">{discount}% OFF</Badge>}
 
         <CldImage
-          src={hovered ? img : img2}
+          src={hovered && img2 ? img2 : img}
           alt={title}
           width={500}
           height={750}
