@@ -1,7 +1,7 @@
-"use server";
+"use server"
 
-import { v2 as cloudinary } from "cloudinary";
-import z from "zod";
+import { v2 as cloudinary } from "cloudinary"
+import z from "zod"
 import {
   adminsTable,
   editProductSchema,
@@ -10,32 +10,29 @@ import {
   usersToProducts,
   usersTable,
   productVariantsTable,
-} from "@/db/schema";
-import { db } from "@/db";
-import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { SelectUserToProduct } from "@/db/schema";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth";
-import { Items } from "mercadopago/dist/clients/commonTypes";
+} from "@/db/schema"
+import { db } from "@/db"
+import { eq } from "drizzle-orm"
+import { revalidatePath } from "next/cache"
+import type { SelectUserToProduct } from "@/db/schema"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../../auth"
+import type { Items } from "mercadopago/dist/clients/commonTypes"
 
 const cloudinaryConfig = cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
-});
+})
 
-const uploadEndpoint = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL!;
+const uploadEndpoint = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL!
 
 const getSignature = () => {
-  const timestamp = Math.round(Date.now() / 1000).toString();
-  const signature = cloudinary.utils.api_sign_request(
-    { timestamp, folder: "k3y-shop" },
-    cloudinaryConfig.api_secret!
-  );
-  return { timestamp, signature };
-};
+  const timestamp = Math.round(Date.now() / 1000).toString()
+  const signature = cloudinary.utils.api_sign_request({ timestamp, folder: "k3y-shop" }, cloudinaryConfig.api_secret!)
+  return { timestamp, signature }
+}
 
 const uploadFile = async ({
   file,
@@ -43,100 +40,84 @@ const uploadFile = async ({
   timestamp,
   folder = "k3y-shop",
 }: {
-  file: File;
-  signature: string;
-  timestamp: string;
-  folder?: string;
+  file: File
+  signature: string
+  timestamp: string
+  folder?: string
 }) => {
-  const cloudinaryFormData = new FormData();
-  cloudinaryFormData.append("file", file);
-  cloudinaryFormData.append(
-    "api_key",
-    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!
-  );
-  cloudinaryFormData.append("signature", signature);
-  cloudinaryFormData.append("timestamp", timestamp);
-  cloudinaryFormData.append("folder", folder);
+  const cloudinaryFormData = new FormData()
+  cloudinaryFormData.append("file", file)
+  cloudinaryFormData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!)
+  cloudinaryFormData.append("signature", signature)
+  cloudinaryFormData.append("timestamp", timestamp)
+  cloudinaryFormData.append("folder", folder)
 
   const response = await fetch(uploadEndpoint, {
     method: "POST",
     body: cloudinaryFormData,
-  });
+  })
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Cloudinary error response:", errorText);
-    throw new Error("cloudinary fetch failed");
+    const errorText = await response.text()
+    console.error("Cloudinary error response:", errorText)
+    throw new Error("cloudinary fetch failed")
   }
 
-  const cldData = await response.json();
-  const data = z
-    .object({ secure_url: z.string(), public_id: z.string() })
-    .parse(cldData);
+  const cldData = await response.json()
+  const data = z.object({ secure_url: z.string(), public_id: z.string() }).parse(cldData)
 
-  return data;
-};
+  return data
+}
 
 export const isAdmin = async (email: string) => {
-  return (
-    (await db.select().from(adminsTable).where(eq(adminsTable.email, email)))
-      .length !== 0
-  );
-};
+  return (await db.select().from(adminsTable).where(eq(adminsTable.email, email))).length !== 0
+}
 
-export const getProducts = async (
-  options: Partial<{ recommended: boolean }> = { recommended: false }
-) => {
-  if (!options.recommended) return await db.select().from(productsTable);
-  return await db
-    .select()
-    .from(productsTable)
-    .where(eq(productsTable.isRecommended, options.recommended));
-};
+export const getProducts = async (options: Partial<{ recommended: boolean }> = { recommended: false }) => {
+  if (!options.recommended) return await db.select().from(productsTable)
+  return await db.select().from(productsTable).where(eq(productsTable.isRecommended, options.recommended))
+}
 
 export const createProduct = async (formData: FormData) => {
-  const file = formData.get("img") as File | null;
-  const file2 = formData.get("img2") as File | null;
-  const file3 = formData.get("img3") as File | null;
-  const file4 = formData.get("img4") as File | null;
+  const file = formData.get("img") as File | null
+  const file2 = formData.get("img2") as File | null
+  const file3 = formData.get("img3") as File | null
+  const file4 = formData.get("img4") as File | null
 
-  const entries = Array.from(formData.entries()).filter(
-    ([key]) => !["img", "img2", "img3", "img4"].includes(key)
-  );
-  const parsed = productSchema.parse(Object.fromEntries(entries));
+  const entries = Array.from(formData.entries()).filter(([key]) => !["img", "img2", "img3", "img4"].includes(key))
+  const parsed = productSchema.parse(Object.fromEntries(entries))
 
-  const { price, discount, size, isRecommended, ...rest } = parsed;
-  const sizes = formData.getAll("size") as string[];
+  const { price, discount, size, isRecommended, ...rest } = parsed
+  const sizes = formData.getAll("size") as string[]
 
-  let publicId = "";
-  let publicId2 = "";
-  let publicId3 = "";
-  let publicId4 = "";
+  let publicId = ""
+  let publicId2 = ""
+  let publicId3 = ""
+  let publicId4 = ""
 
   if (file instanceof File && file.size > 0) {
-    const { signature, timestamp } = getSignature();
-    const data = await uploadFile({ file, signature, timestamp });
-    publicId = data.public_id;
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file, signature, timestamp })
+    publicId = data.public_id
   }
 
   if (file2 instanceof File && file2.size > 0) {
-    const { signature, timestamp } = getSignature();
-    const data = await uploadFile({ file: file2, signature, timestamp });
-    publicId2 = data.public_id;
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file2, signature, timestamp })
+    publicId2 = data.public_id
   }
 
   if (file3 instanceof File && file3.size > 0) {
-    const { signature, timestamp } = getSignature();
-    const data = await uploadFile({ file: file3, signature, timestamp });
-    publicId3 = data.public_id;
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file3, signature, timestamp })
+    publicId3 = data.public_id
   }
 
   if (file4 instanceof File && file4.size > 0) {
-    const { signature, timestamp } = getSignature();
-    const data = await uploadFile({ file: file4, signature, timestamp });
-    publicId4 = data.public_id;
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file4, signature, timestamp })
+    publicId4 = data.public_id
   }
-
 
   await db.insert(productsTable).values({
     ...rest,
@@ -148,9 +129,9 @@ export const createProduct = async (formData: FormData) => {
     size: sizes.join(", "),
     price: Number(price),
     discount: discount ? Number(discount) : 0, // Manejar el campo de descuento
-  });
-  revalidatePath("/");
-};
+  })
+  revalidatePath("/")
+}
 
 export const deleteProduct = async (formData: FormData) => {
   const { id, img, img2, img3, img4 } = z
@@ -161,95 +142,87 @@ export const deleteProduct = async (formData: FormData) => {
       img3: z.string(),
       img4: z.string(),
     })
-    .parse(Object.fromEntries(formData));
+    .parse(Object.fromEntries(formData))
 
   // 1. Borra variantes relacionadas
-  await db
-    .delete(productVariantsTable)
-    .where(eq(productVariantsTable.productId, parseInt(id)));
+  await db.delete(productVariantsTable).where(eq(productVariantsTable.productId, Number.parseInt(id)))
 
   // 2. Borra otras relaciones si existen (ejemplo: usersToProducts)
-  await db
-    .delete(usersToProducts)
-    .where(eq(usersToProducts.productId, parseInt(id)));
+  await db.delete(usersToProducts).where(eq(usersToProducts.productId, Number.parseInt(id)))
 
   await Promise.all([
-    db.delete(productsTable).where(eq(productsTable.id, parseInt(id))),
+    db.delete(productsTable).where(eq(productsTable.id, Number.parseInt(id))),
     cloudinary.uploader.destroy(img),
     cloudinary.uploader.destroy(img2),
     cloudinary.uploader.destroy(img3),
     cloudinary.uploader.destroy(img4),
-  ]);
-  revalidatePath("/");
-};
+  ])
+  revalidatePath("/")
+}
 
 export const editProduct = async (formData: FormData) => {
-  const file = formData.get("img") as File | null;
-  const file2 = formData.get("img2") as File | null;
-  const file3 = formData.get("img3") as File | null;
-  const file4 = formData.get("img4") as File | null;
+  const file = formData.get("img") as File | null
+  const file2 = formData.get("img2") as File | null
+  const file3 = formData.get("img3") as File | null
+  const file4 = formData.get("img4") as File | null
 
-  const origPublicId = formData.get("publicId") as string;
-  const origPublicId2 = formData.get("publicId2") as string;
-  const origPublicId3 = formData.get("publicId3") as string;
-  const origPublicId4 = formData.get("publicId4") as string;
+  const origPublicId = formData.get("publicId") as string
+  const origPublicId2 = formData.get("publicId2") as string
+  const origPublicId3 = formData.get("publicId3") as string
+  const origPublicId4 = formData.get("publicId4") as string
 
   const entries = Array.from(formData.entries()).filter(
-    ([key]) =>
-      !["img", "img2", "img3", "img4", "publicId", "publicId2", "publicId3","publicId4"].includes(
-        key
-      )
-  );
-  const parsed = editProductSchema.parse(Object.fromEntries(entries));
+    ([key]) => !["img", "img2", "img3", "img4", "publicId", "publicId2", "publicId3", "publicId4"].includes(key),
+  )
+  const parsed = editProductSchema.parse(Object.fromEntries(entries))
 
-  const { title, id, description, price, discount, isRecommended, category } =
-    parsed;
+  const { title, id, description, price, discount, isRecommended, category } = parsed
 
-  const sizes = formData.getAll("size") as string[];
+  const sizes = formData.getAll("size") as string[]
 
-  let newPublicId = origPublicId;
-  let newPublicId2 = origPublicId2;
-  let newPublicId3 = origPublicId3;
-  let newPublicId4 = origPublicId4;
+  let newPublicId = origPublicId
+  let newPublicId2 = origPublicId2
+  let newPublicId3 = origPublicId3
+  let newPublicId4 = origPublicId4
 
   if (file instanceof File && file.size > 0 && origPublicId) {
-    cloudinary.uploader.destroy(origPublicId);
-    const { signature, timestamp } = getSignature();
-    const { public_id } = await uploadFile({ file, signature, timestamp });
-    newPublicId = public_id;
+    cloudinary.uploader.destroy(origPublicId)
+    const { signature, timestamp } = getSignature()
+    const { public_id } = await uploadFile({ file, signature, timestamp })
+    newPublicId = public_id
   }
 
   if (file2 instanceof File && file2.size > 0 && origPublicId2) {
-    cloudinary.uploader.destroy(origPublicId2);
-    const { signature, timestamp } = getSignature();
+    cloudinary.uploader.destroy(origPublicId2)
+    const { signature, timestamp } = getSignature()
     const { public_id } = await uploadFile({
       file: file2,
       signature,
       timestamp,
-    });
-    newPublicId2 = public_id;
+    })
+    newPublicId2 = public_id
   }
 
   if (file3 instanceof File && file3.size > 0 && origPublicId3) {
-    cloudinary.uploader.destroy(origPublicId3);
-    const { signature, timestamp } = getSignature();
+    cloudinary.uploader.destroy(origPublicId3)
+    const { signature, timestamp } = getSignature()
     const { public_id } = await uploadFile({
       file: file3,
       signature,
       timestamp,
-    });
-    newPublicId3 = public_id;
+    })
+    newPublicId3 = public_id
   }
 
   if (file4 instanceof File && file4.size > 0 && origPublicId4) {
-    cloudinary.uploader.destroy(origPublicId4);
-    const { signature, timestamp } = getSignature();
+    cloudinary.uploader.destroy(origPublicId4)
+    const { signature, timestamp } = getSignature()
     const { public_id } = await uploadFile({
       file: file4,
       signature,
       timestamp,
-    });
-    newPublicId4 = public_id;
+    })
+    newPublicId4 = public_id
   }
 
   await db
@@ -267,24 +240,21 @@ export const editProduct = async (formData: FormData) => {
       discount: discount ? Number(discount) : 0, // Manejar el campo de descuento
       size: sizes.join(", "),
     })
-    .where(eq(productsTable.id, Number.parseInt(id)));
+    .where(eq(productsTable.id, Number.parseInt(id)))
 
-  revalidatePath("/admin/products");
-};
+  revalidatePath("/admin/products")
+}
 
 export const changeStatus = async ({
   id,
   status,
 }: {
-  status: SelectUserToProduct["status"];
-  id: SelectUserToProduct["id"];
+  status: SelectUserToProduct["status"]
+  id: SelectUserToProduct["id"]
 }) => {
-  await db
-    .update(usersToProducts)
-    .set({ status })
-    .where(eq(usersToProducts.id, id));
-  revalidatePath("/admin/orders");
-};
+  await db.update(usersToProducts).set({ status }).where(eq(usersToProducts.id, id))
+  revalidatePath("/admin/orders")
+}
 
 export const getOrders = async () => {
   return await db.query.usersToProducts.findMany({
@@ -292,62 +262,65 @@ export const getOrders = async () => {
       user: true,
       product: true,
     },
-  });
-};
+  })
+}
 
 export const getUsers = async () => {
-  return await db.select().from(usersTable);
-};
+  return await db.select().from(usersTable)
+}
 
 export const getUser = async () => {
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email;
-  if (!email) return;
+  const session = await getServerSession(authOptions)
+  const email = session?.user?.email
+  if (!email) return
 
   return await db.query.usersTable.findFirst({
     where: eq(usersTable.email, email),
-  });
-};
+  })
+}
 
-export const buy = async (
-  items: Items[],
-  { email, delivery }: { email: string; delivery: boolean }
-) => {
-  let userId;
-  const users = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
+export const buy = async (items: Items[], { email, delivery }: { email: string; delivery: boolean }) => {
+  console.log("=== DATOS RECIBIDOS EN BUY ===")
+  console.log("Email:", email)
+  console.log("Delivery:", delivery)
+  console.log("Items:", items)
+
+  let userId
+  const users = await db.select().from(usersTable).where(eq(usersTable.email, email))
 
   if (users.length === 0) {
-    const [{ id }] = await db
-      .insert(usersTable)
-      .values({ email, name: "" })
-      .returning();
-    userId = id;
+    const [{ id }] = await db.insert(usersTable).values({ email, name: "" }).returning()
+    userId = id
   } else {
-    userId = users[0].id;
+    userId = users[0].id
   }
 
+  // Filtrar items que no sean el costo de delivery para evitar duplicados
+  const productItems = items.filter((item) => item.id !== "delivery-fee")
+
   await db.insert(usersToProducts).values(
-    items.map(({ id: productId, quantity }) => ({
-      productId: parseInt(productId),
+    productItems.map(({ id: productId, quantity }) => ({
+      productId: Number.parseInt(productId),
       userId,
       quantity,
       delivery,
-    }))
-  );
+    })),
+  )
 
-  revalidatePath("/");
-};
+  console.log("=== ORDEN GUARDADA ===")
+  console.log("User ID:", userId)
+  console.log("Delivery option:", delivery)
+
+  revalidatePath("/")
+}
 
 export const getProductById = async (id: string) => {
   const product = await db.query.productsTable.findFirst({
-    where: eq(productsTable.id, parseInt(id)),
-  });
-  if (!product) throw new Error("Product not found");
-  return product;
-};
+    where: eq(productsTable.id, Number.parseInt(id)),
+  })
+  if (!product) throw new Error("Product not found")
+  return product
+}
 
 export const editUser = async (formData: FormData) => {
   const { id, streetNumber, dni, ...data } = z
@@ -362,22 +335,22 @@ export const editUser = async (formData: FormData) => {
       state: z.string().optional(),
       indications: z.string().optional(),
     })
-    .parse(Object.fromEntries(formData));
+    .parse(Object.fromEntries(formData))
 
   await db
     .update(usersTable)
     .set({
-      streetNumber: streetNumber ? parseInt(streetNumber) : null,
-      dni: dni ? parseInt(dni) : null,
+      streetNumber: streetNumber ? Number.parseInt(streetNumber) : null,
+      dni: dni ? Number.parseInt(dni) : null,
       ...data,
     })
-    .where(eq(usersTable.id, parseInt(id)));
-  revalidatePath("/");
-};
+    .where(eq(usersTable.id, Number.parseInt(id)))
+  revalidatePath("/")
+}
 
 export const getUserOrders = async (userId: number) => {
   return await db.query.usersToProducts.findMany({
     with: { product: true, user: true },
     where: eq(usersToProducts.userId, userId),
-  });
-};
+  })
+}

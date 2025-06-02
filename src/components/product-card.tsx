@@ -33,7 +33,7 @@ export function ProductCard({ products }: { products: Product }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {discount > 0 && <Badge className="absolute top-2 right-2 z-10 bg-red-500">{discount}% OFF</Badge>}
+        {discount > 0 && !soldOut && <Badge className="absolute top-2 right-2 z-10 bg-red-500">{discount}% OFF</Badge>}
 
         <CldImage
           src={hovered && img2 ? img2 : img}
@@ -52,7 +52,7 @@ export function ProductCard({ products }: { products: Product }) {
       <div>
         <h2 className="pt-4 text-md text-gray-500 text-center">{title}</h2>
         <div className="pt-2 text-center">
-          {discount > 0 ? (
+          {discount > 0 && !soldOut ? (
             <div className="flex flex-col items-center">
               <p className="text-sm text-gray-400 line-through">{currency.format(price)}</p>
               <p className="text-sm text-red-500 font-semibold">{currency.format(discountedPrice)}</p>

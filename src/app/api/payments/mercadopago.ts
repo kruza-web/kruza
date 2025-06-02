@@ -28,7 +28,7 @@ const mpItemSchema = z.object({
   variant_id: z.number().optional(),
 })
 
-// Esquema para validar los metadatos
+// Actualizar el esquema para validar los metadatos
 const metadataSchema = z.object({
   email: z.string(),
   delivery: z.boolean().default(false),
@@ -91,9 +91,11 @@ export async function POST(request: NextRequest) {
       // Validar y extraer los metadatos
       const metadata = metadataSchema.parse(payment.metadata)
 
-      console.log(`Processing purchase for email: ${metadata.email}, items: ${validatedItems.length}`)
+      console.log(
+        `Processing purchase for email: ${metadata.email}, items: ${validatedItems.length}, delivery: ${metadata.delivery}`,
+      )
 
-      // Llamar a la función buy con los datos validados
+      // Llamar a la función buy con los datos validados y la opción de delivery
       await buy(validatedItems, metadata)
 
       // Reducir el stock de las variantes

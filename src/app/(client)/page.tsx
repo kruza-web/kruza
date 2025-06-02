@@ -1,19 +1,32 @@
-import { getProducts } from "@/_actions/actions";
-import banner1 from "../../../public/banner1.jpeg";
-import Image from "next/image";
-import { ProductCard } from "@/components/product-card";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { getProducts } from "@/_actions/actions"
+import { getAllProductsStockStatus } from "@/_actions/stock-actions"
+import banner1 from "../../../public/banner1.jpeg"
+import Image from "next/image"
+import { ProductCard } from "@/components/product-card"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export default async function Home() {
-  const products = await getProducts();
+  const products = await getProducts()
 
-   // Marcar productos como agotados si no tienen talles disponibles
-  const productsWithSoldOutFlag = products.map((product) => ({
-    ...product,
-    soldOut: !product.size || product.size.trim() === "",
-    discount: product.discount ?? 0,
-  }))
+  // Obtener el estado de stock de todos los productos
+  const stockStatus = await getAllProductsStockStatus()
+
+  // Crear un mapa para acceder rápidamente al estado de stock por ID de producto
+  const stockMap = new Map()
+  stockStatus.forEach((status) => {
+    stockMap.set(status.productId, status)
+  })
+
+  // Marcar productos como agotados según el stock de variantes y aplicar descuentos
+  const productsWithSoldOutFlag = products.map((product) => {
+    const stock = stockMap.get(product.id)
+    return {
+      ...product,
+      soldOut: stock ? stock.soldOut : true, // Si no hay información de stock, asumir agotado
+      discount: product.discount ?? 0,
+    }
+  })
 
   return (
     <>
@@ -21,18 +34,12 @@ export default async function Home() {
       <div className="pt-10 w-full overflow-hidden">
         {/* DESKTOP & TABLET */}
         <div className="hidden sm:block w-full h-[400px] relative lg:h-[1080px]">
-          <Image
-            src={banner1}
-            alt="Banner horizontal"
-            fill
-            className="object-fill"
-            priority
-          />
+          <Image src={banner1 || "/placeholder.svg"} alt="Banner horizontal" fill className="object-fill" priority />
         </div>
         {/* MÓVIL */}
         <div className="block sm:hidden w-screen h-[100vw] relative">
           <Image
-            src={banner1}
+            src={banner1 || "/placeholder.svg"}
             alt="Banner vertical"
             fill
             className="object-center rotate-90 origin-center"
@@ -43,9 +50,9 @@ export default async function Home() {
 
       <div className="m-12">
         <h1 className="mb-6">NUESTRA ROPITA</h1>
-        <div >
+        <div>
           <ul className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-          {productsWithSoldOutFlag.map(
+            {productsWithSoldOutFlag.map(
               (product) =>
                 product.isRecommended && (
                   <li key={product.id}>
@@ -54,7 +61,7 @@ export default async function Home() {
                     </Link>
                   </li>
                 ),
-            )} 
+            )}
           </ul>
         </div>
       </div>
@@ -62,10 +69,10 @@ export default async function Home() {
       <div className="mb-8 flex items-center justify-center">
         <Link href="/store">
           <Button variant="outline" className="w-full h-full text-lg text-gray-600 rounded-none shadow-none">
-           Ver Tienda
+            Ver Tienda
           </Button>
         </Link>
       </div>
     </>
-  );
+  )
 }

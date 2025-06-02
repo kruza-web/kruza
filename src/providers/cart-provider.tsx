@@ -15,27 +15,38 @@ export type CartItem = {
   variantId?: number
 }
 
+// Modificar el tipo CartContextType para incluir la opción de delivery
 type CartContextType = {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, "quantity"> & {quantity?: number}) => void
+  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void
   removeItem: (id: number, variantId?: number) => void
   updateQuantity: (id: number, quantity: number, variantId?: number) => void
   clearCart: () => void
   itemCount: number
   totalPrice: number
+  deliveryOption: "delivery" | "pickup"
+  setDeliveryOption: (option: "delivery" | "pickup") => void
+  deliveryCost: number
+  finalTotal: number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
+// Añadir el estado para la opción de delivery y su costo
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [mounted, setMounted] = useState(false)
+  const [deliveryOption, setDeliveryOption] = useState<"delivery" | "pickup">("pickup")
+  const deliveryCost = deliveryOption === "delivery" ? 10000 : 0
 
   // Calculate total number of items in cart
   const itemCount = items.reduce((total, item) => total + item.quantity, 0)
 
   // Calculate total price
   const totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0)
+
+  // Calculate final total including delivery cost
+  const finalTotal = totalPrice + deliveryCost
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -47,6 +58,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to parse cart from localStorage", error)
       }
     }
+
+    // Cargar la opción de delivery desde localStorage
+    const storedDeliveryOption = localStorage.getItem("deliveryOption")
+    if (storedDeliveryOption === "delivery" || storedDeliveryOption === "pickup") {
+      setDeliveryOption(storedDeliveryOption)
+    }
+
     setMounted(true)
   }, [])
 
@@ -54,10 +72,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (mounted) {
       localStorage.setItem("cart", JSON.stringify(items))
+      localStorage.setItem("deliveryOption", deliveryOption)
     }
-  }, [items, mounted])
+  }, [items, deliveryOption, mounted])
 
- // Add item to cart
+  // Add item to cart
   const addItem = (newItem: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     // Usar la cantidad proporcionada o 1 por defecto
     const quantityToAdd = newItem.quantity || 1
@@ -155,6 +174,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         itemCount,
         totalPrice,
+        deliveryOption,
+        setDeliveryOption,
+        deliveryCost,
+        finalTotal,
       }}
     >
       {children}

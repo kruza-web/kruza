@@ -6,6 +6,7 @@ import { getUser } from "@/_actions/actions";
 import { MobileDrawer } from "@/components/mobile-drawer";
 import { Cart } from "@/components/cart-button";
 import { Facebook, Instagram, Twitter } from "lucide-react";
+import { FaqModal } from "@/components/faq-modal";
 
 export default async function RootLayout({
   children,
@@ -23,6 +24,7 @@ export default async function RootLayout({
           </Link>
             <Nav />
           <div className="flex items-center space-x-3">
+            <FaqModal />
             <ModeToggle />
             <User />
              {user && <Cart  email={email} />} 
