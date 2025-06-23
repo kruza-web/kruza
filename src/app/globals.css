@@ -116,6 +116,11 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    overflow-y: scroll; /* Siempre muestra la barra de scroll vertical */
+  }
+
   body {
     @apply text-foreground;
     font-family: var(--font-playfair), serif;

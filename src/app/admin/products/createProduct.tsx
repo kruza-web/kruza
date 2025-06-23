@@ -151,7 +151,7 @@ export const CreateProduct = () => {
             Talles
           </Label>
           <div className="flex gap-4 mt-2">
-            {["XS", "S", "M", "L", "XL"].map((size) => (
+            {["XS", "S", "M", "L", "XL", "Único"].map((size) => (
               <label key={size} className="flex items-center space-x-2">
                 <Checkbox
                   id={size}

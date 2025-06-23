@@ -28,12 +28,12 @@ export const MobileDrawer = () => {
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle className="text-center">K3Y-SHOP</DrawerTitle>
+            <DrawerTitle className="text-center">KRUZA</DrawerTitle>
           </DrawerHeader>
           <ul className="grid justify-center gap-3 text-center">
               <li>
                 <Link
-                  href={`/tienda`}
+                  href={`/store`}
                   onClick={() => {
                     setOpen(false);
                   }}

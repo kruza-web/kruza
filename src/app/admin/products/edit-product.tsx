@@ -190,7 +190,7 @@ export const EditProduct = ({
               Talles
             </Label>
             <div className="flex gap-4 mt-2">
-              {["XS", "S", "M", "L", "XL"].map((sizeOption) => {
+              {["XS", "S", "M", "L", "XL", "Único"].map((sizeOption) => {
                 // Verificar si este talle está en la lista de talles del producto
                 const isChecked = size
                   .split(",")
@@ -224,10 +224,10 @@ export const EditProduct = ({
               Es recomendado
             </label>
           </div>
-          <input type="hidden" name="publicId" value={img} required />
-          <input type="hidden" name="publicId2" value={img2} required />
-          <input type="hidden" name="publicId3" value={img3} required />
-          <input type="hidden" name="publicId4" value={img4} required />
+          <input type="hidden" name="publicId" value={img ?? ""} required />
+          <input type="hidden" name="publicId2" value={img2 ?? ""}  required />
+          <input type="hidden" name="publicId3" value={img3 ?? ""}  required/>
+          <input type="hidden" name="publicId4" value={img4 ?? ""}   required/>
           <input type="hidden" name="id" value={id} required />
           <Submit className="w-full text-white py-2 px-4 rounded-md shadow-sm hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2" />
         </form>

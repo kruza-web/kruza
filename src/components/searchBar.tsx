@@ -42,16 +42,16 @@ export default function SearchBar({products}: {products: Product[]}) {
 
   return (
     <div className="relative">
-      <div className="lg:w-3xl flex items-center border rounded-full overflow-hidden">
+      <div className="lg:min-w-[348px] flex items-center border-b-1 border-black overflow-hidden">
         <Input
           type="text"
           placeholder="Busca tu producto..."
           value={searchQuery}
           onChange={handleSearch}
           onFocus={handleFocus}
-          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:placeholder-white"
+          className="border-0 p-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
         />
-        <Button type="submit" size="icon" variant="ghost" className="rounded-full">
+        <Button type="submit" size="icon" variant="ghost" className="rounded-full justify-end hover:bg-transparent">
           <Search className="h-5 w-5" />
         </Button>
       </div>

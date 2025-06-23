@@ -49,7 +49,7 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col w-full sm:max-w-md">
+      <SheetContent className="flex flex-col w-full sm:max-w-md p-4">
         <SheetHeader className="space-y-2.5 pr-6">
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="size-5" />

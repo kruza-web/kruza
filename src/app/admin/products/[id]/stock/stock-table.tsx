@@ -72,8 +72,8 @@ export const StockTable = ({ variants, colors }: StockTableProps) => {
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
+    <div className="rounded-md border m-8 lg:m-12">
+      <Table className="p-6">
         <TableHeader>
           <TableRow>
             <TableHead>Color</TableHead>

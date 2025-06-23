@@ -53,7 +53,7 @@ export const productVariantsTable = sqliteTable("product_variants", {
   colorId: integer("color_id")
     .notNull()
     .references(() => colorsTable.id),
-  size: text("size").notNull(), // XS, S, M, L, XL
+  size: text("size").notNull(), // XS, S, M, L, XL, Unique
   stock: integer("stock").notNull().default(0),
   createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
   updatedAt: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
@@ -158,9 +158,10 @@ export const editProductSchema = z.object({
   img2: z.instanceof(File).optional(),
   img3: z.instanceof(File).optional(),
   img4: z.instanceof(File).optional(),
-  publicId: z.string(),
-  publicId2: z.string(),
-  publicId3: z.string(),
+  publicId: z.string().optional(),
+  publicId2: z.string().optional(),
+  publicId3: z.string().optional(),
+  publicId4: z.string().optional(),
   size: z.string(),
   discount: z.string().optional(),
   id: z.string(),
