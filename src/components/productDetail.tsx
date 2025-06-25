@@ -143,25 +143,12 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 lg:gap-24 items-start max-w-7xl px-4 mx-auto py-6">
-      {/* Columna de imágenes (ahora a la izquierda) */}
-      <div className="grid gap-3 items-start order-2 md:order-1">
-        <div className="grid gap-4">
-          <div className="relative">
-            {!hasStock && (
-              <div className="absolute bottom-0 right-0 left-0 bg-black bg-opacity-60 py-2 text-center z-10">
-                <span className="text-white font-semibold">AGOTADO</span>
-              </div>
-            )}
-            <CldImage
-              src={currentImage}
-              alt="Product image"
-              width={600}
-              height={600}
-              className="aspect-square object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
-            />
-          </div>
-          <div className="flex gap-4 items-start justify-center">
+     <div className="grid lg:grid-cols-3 gap-6 lg:gap-12 items-start max-w-7xl px-4 mx-auto py-6">
+      {/* Columna de imágenes - Ahora ocupa 2 columnas en pantallas grandes */}
+      <div className="lg:col-span-2 grid gap-3 items-start order-2 lg:order-1">
+        <div className="flex gap-4">
+          {/* Thumbnails a la izquierda */}
+          <div className="flex flex-col gap-3 w-20 flex-shrink-0">
             <button
               className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
               onClick={() => changeMainImage(product.img)}
@@ -169,10 +156,10 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               <CldImage
                 src={product.img}
                 alt="Preview thumbnail"
-                width={100}
-                height={100}
+                width={80}
+                height={80}
                 className={`aspect-square object-cover ${
-                  currentImage === product.img ? "border-2 border-primary" : ""
+                  currentImage === product.img ? "border-2" : ""
                 }`}
               />
               <span className="sr-only">View Image 1</span>
@@ -184,10 +171,10 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               <CldImage
                 src={product.img2}
                 alt="Preview thumbnail"
-                width={100}
-                height={100}
+                width={80}
+                height={80}
                 className={`aspect-square object-cover ${
-                  currentImage === product.img2 ? "border-2 border-primary" : ""
+                  currentImage === product.img2 ? "border-2" : ""
                 }`}
               />
               <span className="sr-only">View Image 2</span>
@@ -200,15 +187,48 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
                 <CldImage
                   src={product.img3}
                   alt="Preview thumbnail"
-                  width={100}
-                  height={100}
+                  width={80}
+                  height={80}
                   className={`aspect-square object-cover ${
-                    currentImage === product.img3 ? "border-2 border-primary" : ""
+                    currentImage === product.img3 ? "border-2" : ""
                   }`}
                 />
                 <span className="sr-only">View Image 3</span>
               </button>
             )}
+            {product.img4 && (
+              <button
+                className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
+                onClick={() => changeMainImage(product.img4)}
+              >
+                <CldImage
+                  src={product.img4}
+                  alt="Preview thumbnail"
+                  width={80}
+                  height={80}
+                  className={`aspect-square object-cover ${
+                    currentImage === product.img4 ? "border-2" : ""
+                  }`}
+                />
+                <span className="sr-only">View Image 4</span>
+              </button>
+            )}
+          </div>
+
+          {/* Imagen principal a la derecha */}
+          <div className="flex-1 relative">
+            {!hasStock && (
+              <div className="absolute bottom-0 right-0 left-0 bg-black bg-opacity-60 py-2 text-center z-10">
+                <span className="text-white font-semibold">AGOTADO</span>
+              </div>
+            )}
+            <CldImage
+              src={currentImage}
+              alt="Product image"
+              width={800}
+              height={800}
+              className="aspect-square object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
+            />
           </div>
         </div>
       </div>

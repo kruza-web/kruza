@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowUpAZ } from 'lucide-react'
+import { useSearchParams } from "next/navigation"
 
 // Define the product type based on your data structure
 type Product = {
@@ -37,6 +38,14 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [categoryFilter, setCategoryFilter] = useState<string>(initialCategory || "all")
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null)
+
+    const searchParams = useSearchParams()
+
+  // Escuchar cambios en los parámetros de URL
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category") || "all"
+    setCategoryFilter(categoryFromUrl)
+  }, [searchParams])
 
   // Apply filters whenever filter state changes
   useEffect(() => {
