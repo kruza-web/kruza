@@ -142,81 +142,44 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
     setCurrentImage(imageUrl)
   }
 
+  // Crear array de imágenes para los thumbnails
+  const thumbnailImages = [
+    { src: product.img, alt: "Image 1" },
+    { src: product.img2, alt: "Image 2" },
+    ...(product.img3 ? [{ src: product.img3, alt: "Image 3" }] : []),
+    ...(product.img4 ? [{ src: product.img4, alt: "Image 4" }] : []),
+  ]
+
   return (
-     <div className="grid lg:grid-cols-3 gap-6 lg:gap-12 items-start max-w-7xl px-4 mx-auto py-6">
+    <div className="grid lg:grid-cols-3 gap-6 lg:gap-12 items-start max-w-7xl px-4 mx-auto py-6">
       {/* Columna de imágenes - Ahora ocupa 2 columnas en pantallas grandes */}
-      <div className="lg:col-span-2 grid gap-3 items-start order-2 lg:order-1">
-        <div className="flex gap-4">
-          {/* Thumbnails a la izquierda */}
+      <div className="lg:col-span-2 grid gap-3 items-start lg:order-1">
+        {/* Layout para desktop: flex con thumbnails a la izquierda */}
+        <div className="hidden lg:flex gap-4">
+          {/* Thumbnails a la izquierda en desktop */}
           <div className="flex flex-col gap-3 w-20 flex-shrink-0">
-            <button
-              className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
-              onClick={() => changeMainImage(product.img)}
-            >
-              <CldImage
-                src={product.img}
-                alt="Preview thumbnail"
-                width={80}
-                height={80}
-                className={`aspect-square object-cover ${
-                  currentImage === product.img ? "border-2" : ""
-                }`}
-              />
-              <span className="sr-only">View Image 1</span>
-            </button>
-            <button
-              className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
-              onClick={() => changeMainImage(product.img2)}
-            >
-              <CldImage
-                src={product.img2}
-                alt="Preview thumbnail"
-                width={80}
-                height={80}
-                className={`aspect-square object-cover ${
-                  currentImage === product.img2 ? "border-2" : ""
-                }`}
-              />
-              <span className="sr-only">View Image 2</span>
-            </button>
-            {product.img3 && (
+            {thumbnailImages.map((image, index) => (
               <button
+                key={index}
                 className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
-                onClick={() => changeMainImage(product.img3)}
+                onClick={() => changeMainImage(image.src)}
               >
                 <CldImage
-                  src={product.img3}
-                  alt="Preview thumbnail"
+                  src={image.src}
+                  alt={image.alt}
                   width={80}
                   height={80}
                   className={`aspect-square object-cover ${
-                    currentImage === product.img3 ? "border-2" : ""
+                    currentImage === image.src ? "border-2 " : ""
                   }`}
                 />
-                <span className="sr-only">View Image 3</span>
+                <span className="sr-only">View {image.alt}</span>
               </button>
-            )}
-            {product.img4 && (
-              <button
-                className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
-                onClick={() => changeMainImage(product.img4)}
-              >
-                <CldImage
-                  src={product.img4}
-                  alt="Preview thumbnail"
-                  width={80}
-                  height={80}
-                  className={`aspect-square object-cover ${
-                    currentImage === product.img4 ? "border-2" : ""
-                  }`}
-                />
-                <span className="sr-only">View Image 4</span>
-              </button>
-            )}
+            ))}
           </div>
 
-          {/* Imagen principal a la derecha */}
-          <div className="flex-1 relative">
+          {/* Imagen principal en desktop */}
+          <div className="flex-1 relative max-w-2xl">
             {!hasStock && (
               <div className="absolute bottom-0 right-0 left-0 bg-black bg-opacity-60 py-2 text-center z-10">
                 <span className="text-white font-semibold">AGOTADO</span>
@@ -231,10 +194,51 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             />
           </div>
         </div>
+
+        {/* Layout para mobile: imagen principal arriba, thumbnails abajo */}
+        <div className="lg:hidden">
+          {/* Imagen principal en mobile */}
+          <div className="relative mb-4">
+            {!hasStock && (
+              <div className="absolute bottom-0 right-0 left-0 bg-black bg-opacity-60 py-2 text-center z-10">
+                <span className="text-white font-semibold">AGOTADO</span>
+              </div>
+            )}
+            <CldImage
+              src={currentImage}
+              alt="Product image"
+              width={800}
+              height={800}
+              className="aspect-square object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
+            />
+          </div>
+
+          {/* Thumbnails en fila horizontal en mobile */}
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {thumbnailImages.map((image, index) => (
+              <button
+                key={index}
+                className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50 flex-shrink-0"
+                onClick={() => changeMainImage(image.src)}
+              >
+                <CldImage
+                  src={image.src}
+                  alt={image.alt}
+                  width={80}
+                  height={80}
+                  className={`aspect-square object-cover w-20 h-20 ${
+                    currentImage === image.src ? "border-1" : ""
+                  }`}
+                />
+                <span className="sr-only">View {image.alt}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Columna de información (ahora a la derecha) */}
-      <div className="grid gap-4 md:gap-10 items-start order-1 md:order-2">
+      {/* Columna de información */}
+      <div className="lg:col-span-1 grid gap-4 md:gap-10 items-start order-1 lg:order-2">
         <div className="items-start">
           <div className="grid gap-4">
             <h1 className="font-bold text-3xl">{product.title}</h1>

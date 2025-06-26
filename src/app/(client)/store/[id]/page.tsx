@@ -29,7 +29,7 @@ export default async function Store({ params }: StoreProps) {
     </section>
 
     {/* Sección Productos Relacionados */}
-    <section className="w-full">
+    <section className="w-full m-4">
       <div className="h-20 mb-4">
         <h2 className="text-2xl font-bold">Productos relacionados</h2>
       </div>

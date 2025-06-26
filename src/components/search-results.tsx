@@ -12,7 +12,7 @@ type Product = {
 
 export default function SearchResults({ products }:{ products:Product[]}) {
   return (
-    <Card className="w-full p-2 shadow-lg">
+    <Card className="w-full p-2 shadow-none border-1 border-gray-500/30 bg-transparent gap-1">
       <div className="space-y-2">
         {products.map((product) => (
           <Link key={product.id} href={`/store/${product.id}`}>
@@ -22,7 +22,7 @@ export default function SearchResults({ products }:{ products:Product[]}) {
       </div>
 
       {products.length > 0 && (
-        <div className="mt-4 text-center">
+        <div className="text-center hover:bg-gray-500/10 rounded-3xl pb-2">
           <Link href="/store" className="text-sm font-medium">
             Ir a la tienda
           </Link>

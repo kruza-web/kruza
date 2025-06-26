@@ -31,7 +31,7 @@ export default async function Home() {
   return (
     <>
       {/* BANNER RESPONSIVE */}
-      <div className="pt-10 w-full overflow-hidden">
+      <div className=" w-full overflow-hidden">
         {/* DESKTOP & TABLET */}
         <div className="hidden sm:block w-full h-[400px] relative lg:h-[1080px]">
           <Image src={banner1 || "/placeholder.svg"} alt="Banner horizontal" fill className="object-fill" priority />
@@ -48,8 +48,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="m-12">
-        <h1 className="mb-6">NUESTRA ROPITA</h1>
+      <div className="m-12 lg:pt-16">
         <div>
           <ul className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
             {productsWithSoldOutFlag.map(

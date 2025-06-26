@@ -12,7 +12,7 @@ export function Cart({email}: { email?: string }) {
 
   return (
     <>
-      <Button variant="ghost" size="icon" className="relative" onClick={() => setOpen(true)}>
+      <Button variant="ghost" size="icon" className="relative hover:bg-gray-500/10" onClick={() => setOpen(true)}>
         <ShoppingBag className="size-5" />
         {itemCount > 0 && (
           <span className="absolute -top-1 -right-1 flex items-center justify-center size-5 text-xs font-medium rounded-full bg-primary text-primary-foreground">

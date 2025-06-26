@@ -24,17 +24,13 @@ export async function User(){
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="hover:bg-gray-500/10">
           <User2 />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="flex flex-col justify-center items-center">
+      <DropdownMenuContent className="flex flex-col justify-center items-center border-1 border-gray-500/30 bg-transparent">
         {name && <DropdownMenuLabel>{name}</DropdownMenuLabel>}
-        {email && (
-          <DropdownMenuLabel className="text-muted-foreground">
-            {email}
-          </DropdownMenuLabel>
-        )}
+
         {!session?.user ? (
           <>
             <SignIn />

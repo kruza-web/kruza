@@ -10,7 +10,7 @@ export const SignOut = ({ redirect = "/" }: { redirect?: string }) => {
   };
 
   return (
-      <Button onClick={handleSignOut} className={cn("w-full")} variant="outline" size="lg" disabled={false} >
+      <Button onClick={handleSignOut} className={cn("w-full bg-transparent border-0 shadow-none hover:bg-gray-500/10")} variant="outline" size="lg" disabled={false} >
         Cerrar session
       </Button>
   );
