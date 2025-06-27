@@ -31,7 +31,7 @@ export default async function Home() {
   return (
     <>
       {/* BANNER RESPONSIVE */}
-      <div className=" w-full overflow-hidden">
+      <div className="w-full overflow-hidden pt-10 bg-[#823038]">
         {/* DESKTOP & TABLET */}
         <div className="hidden sm:block w-full h-[400px] relative lg:h-[1080px]">
           <Image src={banner1 || "/placeholder.svg"} alt="Banner horizontal" fill className="object-fill" priority />

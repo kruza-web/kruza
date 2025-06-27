@@ -17,7 +17,7 @@ export default async function RootLayout({
   const email = await user?.email;
   return (
     <>
-      <header className="fixed z-50 w-full text-2xl transition-colors">
+      <header className="fixed z-50 w-full text-2xl backdrop-blur transition-colors">
         <div className="flex items-center gap-10 justify-end py-4 md:justify-between mx-4">
           <div className="flex items-center gap-4 lg:gap-18">
             <Link href={"/"} className="ml-4 hidden md:block">
