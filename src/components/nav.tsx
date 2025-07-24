@@ -1,21 +1,31 @@
+"use client";
+
 import { cn } from "@/lib/utils";
-import SearchBar  from "./searchBar";
-import { HTMLAttributes } from "react";
-import {FC } from "react";
-import { getProducts } from "@/_actions/actions";
+import SearchBar from "./searchBar";
+import type { HTMLAttributes } from "react";
+import type { FC } from "react";
 
-type NavbarProps = HTMLAttributes<HTMLElement> 
+type Product = {
+  id: number;
+  title: string;
+  price: number;
+  img: string;
+  size: string;
+};
 
-export const Nav: FC<NavbarProps> = async ({
+type NavbarProps = HTMLAttributes<HTMLElement> & {
+  products: Product[];
+};
+
+export const ClientNav: FC<NavbarProps> = ({
   className,
+  products,
 }: NavbarProps) => {
-  const products = await getProducts()
-
   return (
     <nav className={cn("flex items-center space-x-4", className)}>
       <div>
-        <SearchBar products={products}/>
+        <SearchBar products={products} />
       </div>
     </nav>
   );
-}
+};

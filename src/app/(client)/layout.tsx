@@ -1,12 +1,9 @@
-import Link from "next/link";
-import { Nav } from "@/components/nav";
-import { User } from "@/components/user";
 import { getUser } from "@/_actions/actions";
-import { MobileDrawer } from "@/components/mobile-drawer";
-import { Cart } from "@/components/cart-button";
 import { Facebook, Instagram, Twitter } from "lucide-react";
-import { FaqModal } from "@/components/faq-modal";
-import { CategoryMenu } from "@/components/categoryMenu";
+import { ClientHeader } from "@/components/clientHeader";
+import { getProducts } from "@/_actions/actions";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../auth";
 
 export default async function RootLayout({
   children,
@@ -15,25 +12,24 @@ export default async function RootLayout({
 }>) {
   const user = await getUser();
   const email = await user?.email;
+  const products = await getProducts();
+  // Obtener datos de sesión para el componente User
+  const session = await getServerSession(authOptions);
+  const sessionName = session?.user?.name;
+  const sessionEmail = session?.user?.email;
+  const userId = user?.id;
+
   return (
     <>
-      <header className="fixed z-50 w-full text-2xl backdrop-blur transition-colors">
-        <div className="flex items-center gap-10 justify-end py-4 md:justify-between mx-4">
-          <div className="flex items-center gap-4 lg:gap-18">
-            <Link href={"/"} className="ml-4 hidden md:block">
-              KRUZA
-            </Link>
-            <CategoryMenu />
-          </div>
-          <div className="flex items-center space-x-3">
-            <Nav />
-            <FaqModal />
-            <User />
-            {user && <Cart email={email} />}
-            <MobileDrawer />
-          </div>
-        </div>
-      </header>
+      <ClientHeader
+        user={user}
+        email={email}
+        products={products}
+        session={session}
+        sessionName={sessionName}
+        sessionEmail={sessionEmail}
+        userId={userId}
+      />
       <main className="flex-grow">{children}</main>
       <footer className="flex flex-col items-center justify-center border-t py-2">
         <div className="flex py-4 items-center justify-between gap-2">

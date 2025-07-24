@@ -1,10 +1,12 @@
 import { getProducts } from "@/_actions/actions"
 import { getAllProductsStockStatus } from "@/_actions/stock-actions"
-import banner1 from "../../../public/banner1.jpeg"
-import Image from "next/image"
 import { ProductCard } from "@/components/product-card"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ProductCarousel } from "@/components/products-carrousel"
+import { PromoBanner } from "@/components/promo-banner"
+import { CategoryShowcase } from "@/components/category-showcase"
+import { InfoBanner } from "@/components/info-banner"
 
 export default async function Home() {
   const products = await getProducts()
@@ -30,48 +32,60 @@ export default async function Home() {
 
   return (
     <>
-      {/* BANNER RESPONSIVE */}
-      <div className="w-full overflow-hidden pt-10 bg-[#823038]">
-        {/* DESKTOP & TABLET */}
-        <div className="hidden sm:block w-full h-[400px] relative lg:h-[1080px]">
-          <Image src={banner1 || "/placeholder.svg"} alt="Banner horizontal" fill className="object-fill" priority />
+      {/* HERO SECTION - SPLIT SCREEN */}
+      <div className="w-full h-screen flex">
+        {/* LADO IZQUIERDO - 50% */}
+        <div className="w-1/2 relative overflow-hidden bg-gray-100">
+          <img src="/pic1.jpg" alt="Fashion model" className="w-full h-full object-cover" />
+          {/* Overlay con texto */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-red-600 px-8 py-4 transform -rotate-2">
+              <h2 className="text-white text-2xl md:text-4xl font-bold text-center">
+                ESTAS LISTO PARA
+                <br />
+                <span className="text-3xl md:text-5xl">KRUZA?</span>
+              </h2>
+            </div>
+          </div>
         </div>
-        {/* MÓVIL */}
-        <div className="block sm:hidden w-screen h-[100vw] relative">
-          <Image
-            src={banner1 || "/placeholder.svg"}
-            alt="Banner vertical"
-            fill
-            className="object-center rotate-90 origin-center"
-            priority
+
+                {/* LADO DERECHO - 50% */}
+        <div className="w-1/2 relative flex items-center justify-center">
+          {/* Imagen de fondo */}
+          <img
+            src="/pic3.jpg" // Cambia la ruta por la imagen que desees
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-black opacity-20"></div>
+
+          {/* Contenido */}
+          <div className="relative z-10 text-center text-white px-8">
+            <p className="text-sm md:text-base font-medium mb-4 tracking-wider">[ NEW ITEMS ON SALE ]</p>
+            <h1 className="text-6xl md:text-8xl font-bold mb-2">HASTA</h1>
+            <h1 className="text-6xl md:text-8xl font-bold mb-8">50%OFF</h1>
+            <Link href="/store">
+              <Button
+                variant="outline"
+                className="bg-transparent border-white text-white hover:bg-white hover:text-red-600 px-8 py-3 text-lg font-medium"
+              >
+                COMPRAR AHORA
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="m-12 lg:pt-16">
-        <div>
-          <ul className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-            {productsWithSoldOutFlag.map(
-              (product) =>
-                product.isRecommended && (
-                  <li key={product.id}>
-                    <Link href={`/store/${product.id}`}>
-                      <ProductCard products={product} />
-                    </Link>
-                  </li>
-                ),
-            )}
-          </ul>
-        </div>
-      </div>
+      <ProductCarousel products={productsWithSoldOutFlag} />
 
-      <div className="mb-8 flex items-center justify-center">
-        <Link href="/store">
-          <Button variant="outline" className="w-full h-full text-lg text-gray-600 rounded-none shadow-none">
-            Ver Tienda
-          </Button>
-        </Link>
-      </div>
+      {/* PROMO BANNER */}
+      <PromoBanner />
+
+      {/* CATEGORY SHOWCASE */}
+      <CategoryShowcase />
+
+      {/* INFO BANNER */}
+      <InfoBanner />
     </>
   )
 }
