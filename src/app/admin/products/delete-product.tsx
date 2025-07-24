@@ -45,6 +45,7 @@ export const DeleteProduct = ({ id, img, img2, img3, img4 }: { id: number; img: 
             <input type="hidden" name="img" value={img} />
              <input type="hidden" name="img2" value={img2} />
               <input type="hidden" name="img3" value={img3} />
+              <input type="hidden" name="img4" value={img4} />
             <input type="hidden" name="id" value={id} />
             <Submit text="Borrar" />
           </form>
