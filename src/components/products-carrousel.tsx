@@ -42,10 +42,10 @@ export function ProductCarousel({
   }
 
   return (
-    <div className="w-full py-16 bg-gray-50">
+    <div className="w-full py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-18">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{title}</h2>
           <p className="text-lg text-gray-600 font-medium">{subtitle}</p>
         </div>
@@ -130,9 +130,9 @@ export function ProductCarousel({
         </Carousel>
 
         {/* View All Button */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-8">
           <Link href="/store">
-            <Button variant="outline" className="px-8 py-3 text-lg font-medium bg-transparent">
+            <Button variant="outline" className="px-8 py-3  text-lg font-medium bg-transparent">
               Ver Toda la Colección
             </Button>
           </Link>

@@ -15,7 +15,7 @@ export function PromoBanner({
   buttonLink = "/store",
 }: PromoBannerProps) {
   return (
-    <div className="w-full bg-black text-white py-4">
+    <div className="w-full bg-black text-white py-4 lg:mb-10">
       <div className="container mx-auto px-4 flex items-center justify-center gap-6">
         <div className="text-center">
           <span className="text-lg font-bold">{title}</span>

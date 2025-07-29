@@ -2,8 +2,8 @@ import Link from "next/link"
 
 export function CategoryShowcase() {
   return (
-    <div className="w-full max-w-screen py-8 mx-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="container mx-auto px-4 py-8 md:px-8 md:py-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
         {/* SASTRERIA - TOP Category */}
         <Link href="/store?category=top" className="group relative overflow-hidden">
           <div className="aspect-[4/5] relative bg-gradient-to-br from-amber-100 to-amber-200">

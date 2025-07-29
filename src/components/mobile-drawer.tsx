@@ -93,7 +93,6 @@ export const MobileDrawer = ({ products }: MobileDrawerProps) => {
 
             {/* FAQ */}
             <div className="space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground">Ayuda</h3>
               <div className="flex justify-start">
                 <FaqModal />
               </div>

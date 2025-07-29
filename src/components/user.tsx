@@ -28,7 +28,7 @@ export function ClientUser({ session, sessionName, sessionEmail, userId }: Clien
           <User2 />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="flex flex-col justify-center items-center border-1 border-gray-500/30 bg-transparent">
+      <DropdownMenuContent className="flex flex-col justify-center items-center border-1 border-gray-500/30 bg-white">
         {sessionName && <DropdownMenuLabel>{sessionName}</DropdownMenuLabel>}
 
         {!session?.user ? (

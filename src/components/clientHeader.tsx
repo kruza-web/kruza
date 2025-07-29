@@ -42,7 +42,7 @@ export function ClientHeader({ user, email, products, session, sessionName, sess
   return (
     <header
       className={`fixed z-50 w-full max-w-screen transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-sm" : "bg-transparent"
+        isScrolled ? "bg-white shadow-sm" : "bg-white/40"
       }`}
     >
       {/* BANNER SUPERIOR */}
@@ -50,15 +50,18 @@ export function ClientHeader({ user, email, products, session, sessionName, sess
         6 CUOTAS SIN INTERÉS A PARTIR DE $250.000
       </div>
       <div className="flex items-center justify-between px-4 py-4 max-w-none">
-        {/* Mobile Layout */}
-        <div className="flex md:hidden items-center justify-between w-full">
-          {/* Left - Mobile Drawer */}
-          <div className="flex items-center">
+        <div className="flex lg:hidden items-center justify-between w-full">
+          {/* Left side: Drawer and (on tablet) the logo */}
+          <div className="flex items-center gap-4">
             <MobileDrawer products={products} />
+            {/* Logo for Tablet */}
+            <Link href="/" className="hidden md:block text-xl font-bold tracking-wider">
+              KRUZA
+            </Link>
           </div>
 
-          {/* Center - Brand */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
+          {/* Center - Brand (Mobile only) */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 md:hidden">
             <Link href="/" className="text-xl font-bold tracking-wider">
               KRUZA
             </Link>
@@ -72,21 +75,21 @@ export function ClientHeader({ user, email, products, session, sessionName, sess
         </div>
 
         {/* Desktop Layout */}
-        <div className="hidden md:flex items-center justify-between w-full px-2">
-          {/* Left side - Categories */}
-          <div className="flex items-center">
+         <div className="hidden lg:flex items-center justify-between w-full px-4">
+          {/* Left side */}
+          <div className="flex-1 flex justify-start">
             <CategoryMenu />
           </div>
 
           {/* Center - Brand */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
+          <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold tracking-wider">
               KRUZA
             </Link>
           </div>
 
           {/* Right side - Controls */}
-          <div className="flex items-center space-x-3">
+          <div className="flex-1 flex justify-end items-center space-x-3">
             <ClientNav products={products} />
             <FaqModal />
             <ClientUser session={session} sessionName={sessionName} sessionEmail={sessionEmail} userId={userId} />
