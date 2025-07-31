@@ -155,7 +155,7 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
       {/* Columna de imágenes - Ahora ocupa 2 columnas en pantallas grandes */}
       <div className="lg:col-span-2 grid gap-3 items-start lg:order-1">
         {/* Layout para desktop: flex con thumbnails a la izquierda */}
-        <div className="hidden lg:flex gap-4">
+        <div className="hidden lg:flex gap-6">
           {/* Thumbnails a la izquierda en desktop */}
           <div className="flex flex-col gap-3 w-20 flex-shrink-0">
             {thumbnailImages.map((image, index) => (
@@ -179,7 +179,7 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
           </div>
 
           {/* Imagen principal en desktop */}
-          <div className="flex-1 relative max-w-2xl">
+          <div className="flex-1 relative max-w-xl">
             {!hasStock && (
               <div className="absolute bottom-0 right-0 left-0 bg-black bg-opacity-60 py-2 text-center z-10">
                 <span className="text-white font-semibold">AGOTADO</span>
@@ -188,8 +188,8 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             <CldImage
               src={currentImage}
               alt="Product image"
-              width={800}
-              height={800}
+              width={1200}
+              height={1200}
               className="aspect-square object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
             />
           </div>
@@ -242,17 +242,13 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
         <div className="items-start">
           <div className="grid gap-4">
             <h1 className="font-bold text-3xl">{product.title}</h1>
-            <div className="flex items-center gap-4"></div>
-            <div>
-              <p>{product.description}</p>
-            </div>
           </div>
           <div className="text-4xl font-bold mt-4">
             {discount > 0 ? (
               <div className="flex flex-col">
                 <span className="text-lg text-gray-400 line-through">{currency.format(product.price)}</span>
-                <span className="text-red-500">{currency.format(discountedPrice)}</span>
-                <Badge className="mt-1 bg-red-500 w-fit">{discount}% OFF</Badge>
+                <span className="text-black text-3xl">{currency.format(discountedPrice)}</span>
+                <Badge className="mt-1 bg-white text-black border-black w-fit">{discount}% OFF</Badge>
               </div>
             ) : (
               currency.format(product.price)
@@ -329,8 +325,6 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             </RadioGroup>
           </div>
 
-          {selectedColor && selectedSize && <div className="mt-2">{getStockMessage()}</div>}
-
           {!hasStock && (
             <div className="flex items-center text-red-600 mt-2">
               <AlertCircle className="w-4 h-4 mr-1" />
@@ -370,13 +364,13 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               type="button"
               onClick={handleAddToCart}
               disabled={!selectedColor || !selectedSize || currentStock === 0}
-              className="mt-4"
+              
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
               {!hasStock ? "Agotado" : "Agregar al carrito"}
             </Button>
           ) : (
-            <Button type="button" disabled className="mt-4">
+            <Button type="button" disabled className="mt-2">
               <ShoppingCart className="mr-2 h-4 w-4" />
               {"Debes iniciar sesión para agregar al carrito"}
             </Button>

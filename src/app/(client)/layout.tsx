@@ -34,9 +34,9 @@ export default async function RootLayout({
       />
       <main className="flex-grow overflow-x-hidden">{children}</main>
       <footer className="bg-black/5">
-        <div className="container mx-auto px-6 py-12">
+        <div className="container mx-auto px-6 py-8">
            <div className="space-y-4 text-center justify-center mb-8 lg:mb-8">
-              <Link href="/" className="text-2xl font-bold tracking-wider">
+              <Link href="/" className="text-3xl font-bold font-serif tracking-wider">
                 KRUZA
               </Link>
               

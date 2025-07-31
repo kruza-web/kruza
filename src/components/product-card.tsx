@@ -29,7 +29,7 @@ export function ProductCard({ products }: { products: Product }) {
   return (
     <>
       <div
-        className="relative w-full h-[600px] overflow-hidden rounded-t-lg cursor-pointer group"
+        className="relative w-[350px] h-[500px] overflow-hidden rounded-t-lg cursor-pointer group"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >

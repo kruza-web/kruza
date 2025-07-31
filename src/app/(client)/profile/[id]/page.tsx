@@ -69,8 +69,8 @@ export default async function Profile() {
 
   return (
     <>
-      <h2 className="my-16 scroll-m-20 text-center text-4xl font-extrabold tracking-tight sm:mb-10 md:mb-12 lg:mt-24 lg:text-5xl">
-        Perfil
+      <h2 className="mt-32 text-center text-4xl font-extrabold tracking-tight sm:mb-10 md:mb-12 lg:mt-38 lg:text-5xl">
+        Tu Perfil
       </h2>
 
       <form

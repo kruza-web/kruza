@@ -25,7 +25,7 @@ export function ClientUser({ session, sessionName, sessionEmail, userId }: Clien
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="hover:bg-gray-500/10">
-          <User2 />
+          <User2 className="size-5"/>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="flex flex-col justify-center items-center border-1 border-gray-500/30 bg-white">

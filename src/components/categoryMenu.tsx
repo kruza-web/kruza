@@ -19,7 +19,7 @@ export function CategoryMenu() {
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5 size-5" />
           <span className="sr-only">Categorías</span>
         </Button>
       </DropdownMenuTrigger>

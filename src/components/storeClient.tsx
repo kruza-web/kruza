@@ -100,15 +100,12 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
   }
 
   return (
-    <div className="container mx-auto mt-16 px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Tienda</h1>
-
+    <div className="container mx-auto mt-38 px-12 py-8">
       {/* Filters section */}
       <div className="flex flex-col md:flex-row gap-4 mb-8 justify-between">
         {/* Size filter checkboxes */}
         <div className="md:w-1/2">
-          <div className="mb-2 font-medium">Talles:</div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 h-full items-center">
             {ALL_SIZES.map((size) => (
               <label
                 key={size}

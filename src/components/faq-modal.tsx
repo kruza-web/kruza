@@ -93,7 +93,7 @@ export function FaqModal() {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="hover:bg-gray-500/10">
-          <CircleHelp />
+          <CircleHelp className="size-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-dvh max-w-[420px] overflow-auto md:max-w-lg">

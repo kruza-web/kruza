@@ -99,7 +99,7 @@ export function ProductCarousel({
                     {/* Product Info */}
                     <div className="p-4 text-center">
                       <Link href={`/store/${product.id}`}>
-                        <h3 className="font-medium text-gray-900 mb-2 hover:text-gray-700 transition-colors">
+                        <h3 className="font-medium text-lg text-gray-900 mb-2 hover:text-gray-700 transition-colors">
                           {product.title}
                         </h3>
                       </Link>

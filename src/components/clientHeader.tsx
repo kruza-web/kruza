@@ -49,20 +49,20 @@ export function ClientHeader({ user, email, products, session, sessionName, sess
       <div className="w-full max-w-screen bg-black text-white text-center py-2 text-sm font-medium">
         6 CUOTAS SIN INTERÉS A PARTIR DE $250.000
       </div>
-      <div className="flex items-center justify-between px-4 py-4 max-w-none">
+      <div className="flex items-center justify-between px-4 py-6 max-w-none">
         <div className="flex lg:hidden items-center justify-between w-full">
           {/* Left side: Drawer and (on tablet) the logo */}
           <div className="flex items-center gap-4">
             <MobileDrawer products={products} />
             {/* Logo for Tablet */}
-            <Link href="/" className="hidden md:block text-xl font-bold tracking-wider">
+            <Link href="/" className="hidden md:block text-xl font-bold font-playfair tracking-wider">
               KRUZA
             </Link>
           </div>
 
           {/* Center - Brand (Mobile only) */}
           <div className="absolute left-1/2 transform -translate-x-1/2 md:hidden">
-            <Link href="/" className="text-xl font-bold tracking-wider">
+            <Link href="/" className="text-xl font-bold font-playfair tracking-wider">
               KRUZA
             </Link>
           </div>
@@ -83,7 +83,7 @@ export function ClientHeader({ user, email, products, session, sessionName, sess
 
           {/* Center - Brand */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold tracking-wider">
+            <Link href="/" className="text-3xl font-bold font-serif tracking-wider">
               KRUZA
             </Link>
           </div>

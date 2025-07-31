@@ -22,7 +22,7 @@ export default async function Store({ params }: StoreProps) {
   const variants = await getProductVariants(Number.parseInt(id));
 
   return (
-    <div className="flex flex-col gap-12 mt-16">
+    <div className="flex flex-col gap-12 mt-36">
     {/* Sección Detalle del Producto */}
     <section className="w-full">
       <ProductDetail product={product} colors={colors} variants={variants} />
@@ -30,8 +30,8 @@ export default async function Store({ params }: StoreProps) {
 
     {/* Sección Productos Relacionados */}
     <section className="w-full m-4">
-      <div className="h-20 mb-4">
-        <h2 className="text-2xl font-bold">Productos relacionados</h2>
+      <div className="h-20">
+        <h2 className="text-2xl ml-2 font-bold">Descubrí más productos</h2>
       </div>
       <CarrouselProducts />
     </section>

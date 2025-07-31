@@ -6,9 +6,10 @@ import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
-// Esquema para validar los datos de envío
+// Esquema para validar los datos de envío (actualizado con DNI)
 const deliveryInfoSchema = z.object({
   email: z.string().email("Email inválido"),
+  dni: z.string().min(7, "El DNI debe tener al menos 7 dígitos").max(8, "El DNI debe tener máximo 8 dígitos"),
   phone: z.string().min(1, "El teléfono es requerido"),
   street: z.string().min(1, "La calle es requerida"),
   streetNumber: z.string().min(1, "El número es requerido"),
@@ -27,7 +28,7 @@ export async function saveDeliveryInfo(formData: FormData) {
 
   console.log("Datos validados:", validatedData)
 
-  const { email, phone, street, streetNumber, postalCode, city, state, indications } = validatedData
+  const { email, dni, phone, street, streetNumber, postalCode, city, state, indications } = validatedData
 
   // Verificar si el usuario existe
   const existingUser = await db.select().from(usersTable).where(eq(usersTable.email, email))
@@ -39,6 +40,7 @@ export async function saveDeliveryInfo(formData: FormData) {
       .values({
         email,
         name: "", // El nombre podría venir de la sesión
+        dni: Number.parseInt(dni),
         phone,
         street,
         streetNumber: Number.parseInt(streetNumber),
@@ -55,6 +57,7 @@ export async function saveDeliveryInfo(formData: FormData) {
     const updatedUser = await db
       .update(usersTable)
       .set({
+        dni: Number.parseInt(dni),
         phone,
         street,
         streetNumber: Number.parseInt(streetNumber),
@@ -89,9 +92,10 @@ export async function hasDeliveryInfo(email: string): Promise<boolean> {
   const user = await db
     .select({
       hasInfo: usersTable.street,
+      hasDni: usersTable.dni,
     })
     .from(usersTable)
     .where(eq(usersTable.email, email))
 
-  return user.length > 0 && !!user[0].hasInfo
+  return user.length > 0 && !!user[0].hasInfo && !!user[0].hasDni
 }

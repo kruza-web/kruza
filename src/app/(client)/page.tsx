@@ -41,7 +41,7 @@ export default async function Home() {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="bg-white/50 px-8 py-4 transform -rotate-2">
               <h2 className="text-black text-2xl md:text-4xl font-bold text-center">
-                ESTAS LISTO PARA
+                ESTAS LISTA PARA
                 <br />
                 <span className="text-3xl md:text-5xl">KRUZA?</span>
               </h2>

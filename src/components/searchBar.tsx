@@ -52,7 +52,7 @@ export default function SearchBar({products}: {products: Product[]}) {
           className="border-0 p-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-700"
         />
         <Button type="submit" size="icon" variant="ghost" className="rounded-full justify-end hover:bg-transparent">
-          <Search className="h-5 w-5" />
+          <Search className="h-5 w-5 size-5" />
         </Button>
       </div>
 

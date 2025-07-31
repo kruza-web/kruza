@@ -9,8 +9,9 @@ import { CldImage } from "next-cloudinary"
 import { createCheckoutSession } from "@/_actions/mercadopago"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DeliveryForm } from "@/components/delivery-form"
+import { hasDeliveryInfo } from "@/_actions/user-actions"
 
 interface CartSheetProps {
   open: boolean
@@ -33,18 +34,58 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
   } = useCart()
 
   const [showDeliveryForm, setShowDeliveryForm] = useState(false)
+  const [hasCompleteDeliveryInfo, setHasCompleteDeliveryInfo] = useState(false)
+  const [isCheckingDeliveryInfo, setIsCheckingDeliveryInfo] = useState(false)
+
+  // Verificar si el usuario tiene información de delivery completa
+  useEffect(() => {
+    const checkDeliveryInfo = async () => {
+      if (!email || deliveryOption !== "delivery") {
+        setHasCompleteDeliveryInfo(false)
+        return
+      }
+
+      setIsCheckingDeliveryInfo(true)
+      try {
+        const hasInfo = await hasDeliveryInfo(email)
+        setHasCompleteDeliveryInfo(hasInfo)
+        setShowDeliveryForm(!hasInfo)
+      } catch (error) {
+        console.error("Error checking delivery info:", error)
+        setHasCompleteDeliveryInfo(false)
+        setShowDeliveryForm(true)
+      } finally {
+        setIsCheckingDeliveryInfo(false)
+      }
+    }
+
+    checkDeliveryInfo()
+  }, [email, deliveryOption])
 
   const handleDeliveryOptionChange = (value: "delivery" | "pickup") => {
     setDeliveryOption(value)
-    setShowDeliveryForm(value === "delivery")
+    if (value === "pickup") {
+      setShowDeliveryForm(false)
+      setHasCompleteDeliveryInfo(false)
+    }
+  }
+
+  const handleDeliveryFormComplete = () => {
+    setShowDeliveryForm(false)
+    setHasCompleteDeliveryInfo(true)
+  }
+
+  const canProceedToCheckout = () => {
+    if (deliveryOption === "pickup") {
+      return true
+    }
+    return hasCompleteDeliveryInfo && !showDeliveryForm
   }
 
   const handleCheckout = () => {
-    if (deliveryOption === "delivery" && showDeliveryForm) {
-      // Si es delivery y necesita mostrar el formulario, no proceder con el checkout
-      return
+    if (canProceedToCheckout()) {
+      createCheckoutSession(items, email, deliveryOption, deliveryCost)
     }
-    createCheckoutSession(items, email, deliveryOption, deliveryCost)
   }
 
   return (
@@ -90,7 +131,7 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                 </ul>
               </div>
 
-              {/* Opciones de entrega - Movidas aquí */}
+              {/* Opciones de entrega */}
               <div className="border-t pt-4 pb-4 space-y-4">
                 <div className="space-y-2">
                   <h3 className="font-medium">Opciones de entrega</h3>
@@ -110,8 +151,24 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                   </RadioGroup>
                 </div>
 
+                {/* Estado de información de delivery */}
+                {deliveryOption === "delivery" && (
+                  <div className="space-y-2">
+                    {isCheckingDeliveryInfo ? (
+                      <div className="text-sm text-muted-foreground">Verificando información de envío...</div>
+                    ) : hasCompleteDeliveryInfo && !showDeliveryForm ? (
+                      <div className="text-sm text-green-600 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                        Información de envío completa
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+
                 {/* Formulario de delivery */}
-                {showDeliveryForm && <DeliveryForm email={email} onComplete={() => setShowDeliveryForm(false)} />}
+                {showDeliveryForm && deliveryOption === "delivery" && (
+                  <DeliveryForm email={email} onComplete={handleDeliveryFormComplete} />
+                )}
               </div>
             </div>
 
@@ -134,12 +191,12 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" onClick={clearCart} className="flex items-center gap-2">
+                <Button variant="outline" onClick={clearCart} className="flex items-center gap-2 bg-transparent">
                   <Trash2 className="size-4" />
                   Vaciar carrito
                 </Button>
-                <Button onClick={handleCheckout} disabled={deliveryOption === "delivery" && showDeliveryForm}>
-                  Comprar
+                <Button onClick={handleCheckout} disabled={!canProceedToCheckout() || isCheckingDeliveryInfo}>
+                  {deliveryOption === "delivery" && !hasCompleteDeliveryInfo ? "Completar datos" : "Comprar"}
                 </Button>
               </div>
             </SheetFooter>
