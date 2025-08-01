@@ -3,7 +3,7 @@
 import { Preference } from "mercadopago"
 import { redirect } from "next/navigation"
 import type { CartItem } from "../providers/cart-provider"
-import { client } from "@/app/api/payments/mercadopago"
+import { client } from "@/lib/mercadopago"
 
 export async function createCheckoutSession(
   items: CartItem[],
@@ -34,9 +34,13 @@ export async function createCheckoutSession(
         title: "Costo de envío",
         quantity: 1,
         unit_price: deliveryCost,
-        variant_id: undefined, // Agregar esta línea
+        variant_id: undefined,
       })
     }
+
+    console.log("🔧 Creando preferencia de Mercado Pago...")
+    console.log("Items formateados para Mercado Pago:", lineItems)
+    console.log("Delivery option:", deliveryOption, "Delivery cost:", deliveryCost)
 
     const result = await preference.create({
       body: {
@@ -49,11 +53,30 @@ export async function createCheckoutSession(
             quantity: item.quantity,
           })),
         },
+        // 🔧 CONFIGURAR WEBHOOK MEJORADO
+        notification_url:
+          process.env.NODE_ENV === "development"
+            ? `${process.env.NEXTAUTH_URL}/api/payments/webhook`
+            : `https://${process.env.VERCEL_URL}/api/payments/webhook`,
+
+        // URLs de retorno
+        back_urls: {
+          success: `${process.env.NEXTAUTH_URL}/`,
+          failure: `${process.env.NEXTAUTH_URL}/`,
+          pending: `${process.env.NEXTAUTH_URL}/`,
+        },
+        auto_return: "approved" as const,
       },
     })
 
-    console.log("Items formateados para Mercado Pago:", lineItems)
-    console.log("Delivery option:", deliveryOption, "Delivery cost:", deliveryCost)
+    console.log("✅ Preferencia creada exitosamente")
+    console.log("Preference ID:", result.id)
+    console.log(
+      "Notification URL:",
+      process.env.NODE_ENV === "development"
+        ? `${process.env.NEXTAUTH_URL}/api/payments/webhook`
+        : `https://${process.env.VERCEL_URL}/api/payments/webhook`,
+    )
 
     if (result.init_point) {
       redirectUrl = result.init_point

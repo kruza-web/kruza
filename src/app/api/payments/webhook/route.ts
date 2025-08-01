@@ -5,34 +5,50 @@ import { buy } from "@/_actions/actions"
 import { reduceStock } from "@/_actions/stock-actions"
 import { client } from "@/lib/mercadopago"
 
-// Esquema mejorado para validar la notificación de pago
-const paymentSchema = z.object({
-  data: z.object({
-    id: z.string(),
+// Esquema más flexible para manejar diferentes formatos de webhook
+const paymentSchema = z.union([
+  // Formato estándar
+  z.object({
+    data: z.object({
+      id: z.string(),
+    }),
+    type: z.string().optional(),
   }),
-  type: z.string().optional(),
-})
+  // Formato alternativo donde el ID puede venir directamente
+  z.object({
+    id: z.string(),
+    type: z.string().optional(),
+  }),
+  // Formato con action
+  z.object({
+    action: z.string(),
+    data: z.object({
+      id: z.string(),
+    }),
+    type: z.string().optional(),
+  }),
+])
 
-// Esquema para validar los items de Mercado Pago
+// Esquema para validar los items de Mercado Pago con coerción de tipos
 const mpItemSchema = z.object({
   id: z.string(),
-  quantity: z.number(),
+  quantity: z.coerce.number(), // Convierte string a number
   title: z.string(),
   description: z.string().optional(),
   category_id: z.string().optional(),
-  unit_price: z.number(),
-  variant_id: z.number().optional(),
+  unit_price: z.coerce.number(), // Convierte string a number
+  variant_id: z.coerce.number().optional(), // Convierte string a number
 })
 
-// Actualizar el esquema para validar los metadatos
+// Esquema para validar los metadatos
 const metadataSchema = z.object({
   email: z.string(),
-  delivery: z.boolean().default(false),
+  delivery: z.union([z.boolean(), z.string()]).transform((val) => (typeof val === "string" ? val === "true" : val)),
   variants: z
     .array(
       z.object({
-        variantId: z.number(),
-        quantity: z.number(),
+        variantId: z.coerce.number(),
+        quantity: z.coerce.number(),
       }),
     )
     .optional(),
@@ -52,22 +68,44 @@ export async function POST(request: NextRequest) {
     console.log("Body completo:", JSON.stringify(body, null, 2))
     console.log("Headers:", Object.fromEntries(request.headers.entries()))
 
-    const {
-      data: { id },
-      type = "payment",
-    } = paymentSchema.parse(body)
+    let paymentId: string
+    let notificationType = "payment"
 
-    console.log(`Received webhook notification: Type=${type}, ID=${id}`)
+    try {
+      const parsedBody = paymentSchema.parse(body)
+
+      // Extraer ID y tipo según el formato
+      if ("data" in parsedBody && parsedBody.data) {
+        paymentId = parsedBody.data.id
+        // Manejar el tipo de forma segura
+        if ("type" in parsedBody) {
+          notificationType = parsedBody.type || "payment"
+        } else if ("action" in parsedBody) {
+          notificationType = "payment" // Default para formato con action
+        }
+      } else if ("id" in parsedBody) {
+        paymentId = parsedBody.id
+        notificationType = parsedBody.type || "payment"
+      } else {
+        throw new Error("No se pudo extraer el ID del pago")
+      }
+    } catch (parseError) {
+      console.error("❌ Error parsing webhook body:", parseError)
+      console.log("Raw body:", JSON.stringify(body, null, 2))
+      return Response.json({ success: false, error: "Invalid webhook format" }, { status: 400 })
+    }
+
+    console.log(`Received webhook notification: Type=${notificationType}, ID=${paymentId}`)
 
     // Solo procesamos notificaciones de tipo 'payment'
-    if (type !== "payment") {
-      console.log(`Ignoring non-payment notification: ${type}`)
+    if (notificationType !== "payment") {
+      console.log(`Ignoring non-payment notification: ${notificationType}`)
       return Response.json({ success: true, message: "Not a payment notification" })
     }
 
     // Obtener los detalles del pago desde Mercado Pago
     console.log("🔍 Obteniendo detalles del pago desde Mercado Pago...")
-    const payment = await new Payment(client).get({ id })
+    const payment = await new Payment(client).get({ id: paymentId })
 
     // 🔍 LOG DEL PAGO COMPLETO
     console.log("=== DETALLES DEL PAGO ===")
@@ -77,27 +115,37 @@ export async function POST(request: NextRequest) {
 
     // Verificar si el pago está aprobado
     if (payment.status !== "approved") {
-      console.log(`Payment ${id} not approved. Status: ${payment.status}`)
+      console.log(`Payment ${paymentId} not approved. Status: ${payment.status}`)
       return Response.json({ success: true, message: "Payment not approved" })
     }
 
     // Verificar que tenemos los items y metadata necesarios
     const items = payment.additional_info?.items
-    if (!items) {
-      console.warn(`Missing items in payment ${id}`)
+    if (!items || items.length === 0) {
+      console.warn(`Missing items in payment ${paymentId}`)
       return Response.json({ success: false, message: "Missing items" }, { status: 400 })
     }
 
     if (!payment.metadata) {
-      console.warn(`Missing metadata in payment ${id}`)
+      console.warn(`Missing metadata in payment ${paymentId}`)
       return Response.json({ success: false, message: "Missing metadata" }, { status: 400 })
     }
 
     try {
       // Validar y transformar los items
-      const validatedItems = items.map((item) => mpItemSchema.parse(item))
+      console.log("🔍 Validando items...")
+      const validatedItems = items.map((item, index) => {
+        console.log(`Item ${index}:`, JSON.stringify(item, null, 2))
+        try {
+          return mpItemSchema.parse(item)
+        } catch (itemError) {
+          console.error(`Error validating item ${index}:`, itemError)
+          throw itemError
+        }
+      })
 
       // Validar y extraer los metadatos
+      console.log("🔍 Validando metadata...")
       const metadata = metadataSchema.parse(payment.metadata)
 
       console.log("=== DATOS PROCESADOS ===")
@@ -120,10 +168,10 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      console.log(`✅ Successfully processed payment ${id}`)
+      console.log(`✅ Successfully processed payment ${paymentId}`)
       return Response.json({ success: true })
     } catch (validationError) {
-      console.error(`❌ Validation error for payment ${id}:`, validationError)
+      console.error(`❌ Validation error for payment ${paymentId}:`, validationError)
       return Response.json({ success: false, error: "Invalid data format" }, { status: 400 })
     }
   } catch (error) {
