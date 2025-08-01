@@ -42,6 +42,11 @@ export async function createCheckoutSession(
     console.log("Items formateados para Mercado Pago:", lineItems)
     console.log("Delivery option:", deliveryOption, "Delivery cost:", deliveryCost)
 
+    // Usar NEXTAUTH_URL que ya tienes configurada
+    const baseUrl = process.env.NEXTAUTH_URL!
+
+    console.log("🌐 Base URL:", baseUrl)
+
     const result = await preference.create({
       body: {
         items: lineItems,
@@ -53,30 +58,35 @@ export async function createCheckoutSession(
             quantity: item.quantity,
           })),
         },
-        // 🔧 CONFIGURAR WEBHOOK MEJORADO
-        notification_url:
-          process.env.NODE_ENV === "development"
-            ? `${process.env.NEXTAUTH_URL}/api/payments/webhook`
-            : `https://${process.env.VERCEL_URL}/api/payments/webhook`,
+        // 🔧 CONFIGURAR WEBHOOK usando NEXTAUTH_URL
+        notification_url: `${baseUrl}/api/payments/webhook`,
 
-        // URLs de retorno
+        // 🔧 URLs de retorno usando NEXTAUTH_URL
         back_urls: {
-          success: `${process.env.NEXTAUTH_URL}/`,
-          failure: `${process.env.NEXTAUTH_URL}/`,
-          pending: `${process.env.NEXTAUTH_URL}/`,
+          success: `${baseUrl}/?payment=success`,
+          failure: `${baseUrl}/?payment=failure`,
+          pending: `${baseUrl}/?payment=pending`,
         },
-        auto_return: "approved" as const,
+        auto_return: "approved",
+
+        // Configuraciones adicionales
+        payment_methods: {
+          excluded_payment_methods: [],
+          excluded_payment_types: [],
+          installments: 6, // Máximo 6 cuotas
+        },
+
+        // Configurar expiración
+        expires: true,
+        expiration_date_from: new Date().toISOString(),
+        expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
       },
     })
 
     console.log("✅ Preferencia creada exitosamente")
     console.log("Preference ID:", result.id)
-    console.log(
-      "Notification URL:",
-      process.env.NODE_ENV === "development"
-        ? `${process.env.NEXTAUTH_URL}/api/payments/webhook`
-        : `https://${process.env.VERCEL_URL}/api/payments/webhook`,
-    )
+    console.log("Notification URL:", `${baseUrl}/api/payments/webhook`)
+    console.log("Success URL:", `${baseUrl}/?payment=success`)
 
     if (result.init_point) {
       redirectUrl = result.init_point
