@@ -35,10 +35,10 @@ export const CarrouselProducts = async () => {
       }}
       className="mb-6 w-full"
     >
-      <CarouselContent className="-ml-2 md:-ml-4">
+      <CarouselContent className="flex space-x-8">
         {productsWithStockInfo.map((product) => (
-          <CarouselItem key={product.id} className="pl-4 md:pl-6 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/4">  
-            <Link href={`/store/${product.id}`} className="block group">
+          <CarouselItem key={product.id} className=" basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/4">  
+            <Link href={`/store/${product.id}`} className="block group ">
               <ProductCard products={product} />
             </Link>
           </CarouselItem>

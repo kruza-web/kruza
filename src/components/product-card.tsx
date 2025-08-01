@@ -27,9 +27,9 @@ export function ProductCard({ products }: { products: Product }) {
   const discountedPrice = discount > 0 ? price - (price * discount) / 100 : price
 
   return (
-    <>
+    <div className="flex flex-col items-center w-[350px]">
       <div
-        className="relative w-[350px] h-[500px] overflow-hidden rounded-t-lg cursor-pointer group"
+        className="relative w-full h-[500px] overflow-hidden rounded-t-lg cursor-pointer group"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -49,19 +49,17 @@ export function ProductCard({ products }: { products: Product }) {
           </div>
         )}
       </div>
-      <div>
-        <h2 className="pt-4 text-md text-gray-500 text-center">{title}</h2>
-        <div className="pt-2 text-center">
-          {discount > 0 && !soldOut ? (
-            <div className="flex flex-col items-center">
-              <p className="text-sm text-gray-400 line-through">{currency.format(price)}</p>
-              <p className="text-sm text-red-500 font-semibold">{currency.format(discountedPrice)}</p>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500">{currency.format(price)}</p>
-          )}
-        </div>
+      <h2 className="pt-4 text-md text-gray-500 text-center w-full">{title}</h2>
+      <div className="pt-2 text-center w-full">
+        {discount > 0 && !soldOut ? (
+          <div className="flex flex-col items-center">
+            <p className="text-sm text-gray-400 line-through">{currency.format(price)}</p>
+            <p className="text-sm text-red-500 font-semibold">{currency.format(discountedPrice)}</p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">{currency.format(price)}</p>
+        )}
       </div>
-    </>
+    </div>
   )
 }

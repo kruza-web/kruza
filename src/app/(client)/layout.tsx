@@ -36,7 +36,7 @@ export default async function RootLayout({
       <footer className="bg-black/5">
         <div className="container mx-auto px-6 py-8">
            <div className="space-y-4 text-center justify-center mb-8 lg:mb-8">
-              <Link href="/" className="text-3xl font-bold font-serif tracking-wider">
+              <Link href="/" className="text-3xl font-medium font-serif tracking-wider">
                 KRUZA
               </Link>
               
