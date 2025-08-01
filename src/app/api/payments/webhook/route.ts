@@ -1,186 +1,132 @@
 import type { NextRequest } from "next/server"
-import { Payment } from "mercadopago"
+import { Payment, MerchantOrder } from "mercadopago"
 import { z } from "zod"
 import { buy } from "@/_actions/actions"
 import { reduceStock } from "@/_actions/stock-actions"
 import { client } from "@/lib/mercadopago"
 
-// Esquema más flexible para manejar diferentes formatos de webhook
-const paymentSchema = z.union([
-  // Formato estándar
-  z.object({
-    data: z.object({
-      id: z.string(),
-    }),
-    type: z.string().optional(),
-  }),
-  // Formato alternativo donde el ID puede venir directamente
-  z.object({
-    id: z.string(),
-    type: z.string().optional(),
-  }),
-  // Formato con action
-  z.object({
-    action: z.string(),
-    data: z.object({
-      id: z.string(),
-    }),
-    type: z.string().optional(),
-  }),
-])
-
-// Esquema para validar los items de Mercado Pago con coerción de tipos
-const mpItemSchema = z.object({
-  id: z.string(),
-  quantity: z.coerce.number(), // Convierte string a number
-  title: z.string(),
-  description: z.string().optional(),
-  category_id: z.string().optional(),
-  unit_price: z.coerce.number(), // Convierte string a number
-  variant_id: z.coerce.number().optional(), // Convierte string a number
-})
-
-// Esquema para validar los metadatos
+// Esquema para validar los metadatos (debe coincidir con lo que enviamos)
 const metadataSchema = z.object({
   email: z.string(),
   delivery: z.union([z.boolean(), z.string()]).transform((val) => (typeof val === "string" ? val === "true" : val)),
-  variants: z
-    .array(
-      z.object({
-        variantId: z.coerce.number(),
-        quantity: z.coerce.number(),
-      }),
-    )
+  variants: z.array(
+    z.object({
+      productId: z.coerce.number(),
+      variantId: z.coerce.number(),
+      quantity: z.coerce.number(),
+    }),
+  ),
+})
+
+// Esquema genérico para el webhook
+const webhookSchema = z.object({
+  topic: z.string().optional(),
+  type: z.string().optional(),
+  resource: z.string().optional(),
+  data: z
+    .object({
+      id: z.string(),
+    })
     .optional(),
 })
+
+async function processMerchantOrder(merchantOrderId: string) {
+  console.log(`🔍 Procesando Merchant Order ID: ${merchantOrderId}`)
+  const merchantOrderInstance = new MerchantOrder(client)
+  const merchantOrder = await merchantOrderInstance.get({ merchantOrderId })
+
+  console.log("📦 Merchant Order Status:", merchantOrder.status)
+  console.log("📦 Order Status:", merchantOrder.order_status)
+
+  // Procesamos la orden solo si está pagada
+  if (merchantOrder.order_status !== "paid") {
+    console.log(`Orden ${merchantOrderId} no está pagada. Estado: ${merchantOrder.order_status}. Ignorando.`)
+    return
+  }
+
+  const metadata = metadataSchema.parse((merchantOrder as any).metadata)
+  console.log("✅ Metadata validada:", metadata)
+
+  // Llamar a la función buy con los datos de la orden
+  await buy(metadata)
+
+  // Reducir el stock de las variantes
+  if (metadata.variants && metadata.variants.length > 0) {
+    console.log("=== REDUCIENDO STOCK ===")
+    for (const variant of metadata.variants) {
+      console.log(`Reduciendo stock para variante ${variant.variantId} por ${variant.quantity}`)
+      await reduceStock(variant.variantId, variant.quantity)
+    }
+  }
+}
+
+async function processPayment(paymentId: string) {
+  console.log(`🔍 Procesando Payment ID: ${paymentId}`)
+  const payment = await new Payment(client).get({ id: paymentId })
+
+  console.log("💳 Payment Status:", payment.status)
+
+  if (payment.status !== "approved") {
+    console.log(`Pago ${paymentId} no aprobado. Estado: ${payment.status}. Ignorando.`)
+    return
+  }
+
+  if (!payment.metadata) {
+    console.warn(`Faltan metadatos en el pago ${paymentId}`)
+    return
+  }
+
+  const metadata = metadataSchema.parse(payment.metadata)
+  console.log("✅ Metadata validada:", metadata)
+
+  await buy(metadata)
+
+  if (metadata.variants && metadata.variants.length > 0) {
+    console.log("=== REDUCIENDO STOCK ===")
+    for (const variant of metadata.variants) {
+      console.log(`Reduciendo stock para variante ${variant.variantId} por ${variant.quantity}`)
+      await reduceStock(variant.variantId, variant.quantity)
+    }
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     console.log("🚀 WEBHOOK RECIBIDO - INICIANDO PROCESAMIENTO")
-    console.log("🌐 URL:", request.url)
-    console.log("🕐 Timestamp:", new Date().toISOString())
-
-    // Validar la notificación entrante
     const body = await request.json()
-
-    // 🔍 LOG DETALLADO PARA DEBUGGING
-    console.log("=== WEBHOOK MERCADO PAGO ===")
     console.log("Body completo:", JSON.stringify(body, null, 2))
-    console.log("Headers:", Object.fromEntries(request.headers.entries()))
 
-    let paymentId: string
-    let notificationType = "payment"
+    const parsedBody = webhookSchema.parse(body)
 
-    try {
-      const parsedBody = paymentSchema.parse(body)
+    const topic = parsedBody.topic || parsedBody.type || "unknown"
+    console.log(`Identificado Tópico: ${topic}`)
 
-      // Extraer ID y tipo según el formato
-      if ("data" in parsedBody && parsedBody.data) {
-        paymentId = parsedBody.data.id
-        // Manejar el tipo de forma segura
-        if ("type" in parsedBody) {
-          notificationType = parsedBody.type || "payment"
-        } else if ("action" in parsedBody) {
-          notificationType = "payment" // Default para formato con action
-        }
-      } else if ("id" in parsedBody) {
-        paymentId = parsedBody.id
-        notificationType = parsedBody.type || "payment"
+    if (topic.includes("merchant_order")) {
+      const merchantOrderId = parsedBody.resource?.split("/").pop() || parsedBody.data?.id
+      if (merchantOrderId) {
+        await processMerchantOrder(merchantOrderId)
       } else {
-        throw new Error("No se pudo extraer el ID del pago")
+        console.error("❌ No se pudo extraer el ID de la Merchant Order")
       }
-    } catch (parseError) {
-      console.error("❌ Error parsing webhook body:", parseError)
-      console.log("Raw body:", JSON.stringify(body, null, 2))
-      return Response.json({ success: false, error: "Invalid webhook format" }, { status: 400 })
-    }
-
-    console.log(`Received webhook notification: Type=${notificationType}, ID=${paymentId}`)
-
-    // Solo procesamos notificaciones de tipo 'payment'
-    if (notificationType !== "payment") {
-      console.log(`Ignoring non-payment notification: ${notificationType}`)
-      return Response.json({ success: true, message: "Not a payment notification" })
-    }
-
-    // Obtener los detalles del pago desde Mercado Pago
-    console.log("🔍 Obteniendo detalles del pago desde Mercado Pago...")
-    const payment = await new Payment(client).get({ id: paymentId })
-
-    // 🔍 LOG DEL PAGO COMPLETO
-    console.log("=== DETALLES DEL PAGO ===")
-    console.log("Payment status:", payment.status)
-    console.log("Payment metadata:", JSON.stringify(payment.metadata, null, 2))
-    console.log("Payment items:", JSON.stringify(payment.additional_info?.items, null, 2))
-
-    // Verificar si el pago está aprobado
-    if (payment.status !== "approved") {
-      console.log(`Payment ${paymentId} not approved. Status: ${payment.status}`)
-      return Response.json({ success: true, message: "Payment not approved" })
-    }
-
-    // Verificar que tenemos los items y metadata necesarios
-    const items = payment.additional_info?.items
-    if (!items || items.length === 0) {
-      console.warn(`Missing items in payment ${paymentId}`)
-      return Response.json({ success: false, message: "Missing items" }, { status: 400 })
-    }
-
-    if (!payment.metadata) {
-      console.warn(`Missing metadata in payment ${paymentId}`)
-      return Response.json({ success: false, message: "Missing metadata" }, { status: 400 })
-    }
-
-    try {
-      // Validar y transformar los items
-      console.log("🔍 Validando items...")
-      const validatedItems = items.map((item, index) => {
-        console.log(`Item ${index}:`, JSON.stringify(item, null, 2))
-        try {
-          return mpItemSchema.parse(item)
-        } catch (itemError) {
-          console.error(`Error validating item ${index}:`, itemError)
-          throw itemError
-        }
-      })
-
-      // Validar y extraer los metadatos
-      console.log("🔍 Validando metadata...")
-      const metadata = metadataSchema.parse(payment.metadata)
-
-      console.log("=== DATOS PROCESADOS ===")
-      console.log(`Processing purchase for email: ${metadata.email}`)
-      console.log(`Items: ${validatedItems.length}`)
-      console.log(`Delivery: ${metadata.delivery}`)
-      console.log("Validated items:", JSON.stringify(validatedItems, null, 2))
-      console.log("Metadata:", JSON.stringify(metadata, null, 2))
-
-      // Llamar a la función buy con los datos validados y la opción de delivery
-      console.log("🛒 Llamando a función buy...")
-      await buy(validatedItems, metadata)
-
-      // Reducir el stock de las variantes
-      if (metadata.variants && metadata.variants.length > 0) {
-        console.log("=== REDUCIENDO STOCK ===")
-        for (const variant of metadata.variants) {
-          console.log(`Reducing stock for variant ${variant.variantId} by ${variant.quantity}`)
-          await reduceStock(variant.variantId, variant.quantity)
-        }
+    } else if (topic.includes("payment")) {
+      const paymentId = parsedBody.data?.id
+      if (paymentId) {
+        await processPayment(paymentId)
+      } else {
+        console.error("❌ No se pudo extraer el ID del Pago")
       }
-
-      console.log(`✅ Successfully processed payment ${paymentId}`)
-      return Response.json({ success: true })
-    } catch (validationError) {
-      console.error(`❌ Validation error for payment ${paymentId}:`, validationError)
-      return Response.json({ success: false, error: "Invalid data format" }, { status: 400 })
+    } else {
+      console.log(`Ignorando tópico no reconocido: ${topic}`)
     }
+
+    return Response.json({ success: true })
   } catch (error) {
-    console.error("❌ Error processing webhook:", error)
-    return Response.json({ success: false, error: "Internal server error" }, { status: 500 })
+    console.error("❌ Error procesando webhook:", error)
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido"
+    return Response.json({ success: false, error: errorMessage }, { status: 500 })
   }
 }
 
-// También manejar GET para verificar que el endpoint funciona
 export async function GET() {
   console.log("🔍 Webhook endpoint verificado - GET request recibido")
   return Response.json({

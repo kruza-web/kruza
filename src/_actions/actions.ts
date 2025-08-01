@@ -279,23 +279,24 @@ export const getUser = async () => {
   })
 }
 
-export const buy = async (
-  items: Items[],
-  {
-    email,
-    delivery,
-    variants,
-  }: {
-    email: string
-    delivery: boolean
-    variants?: Array<{ variantId: number; quantity: number }>
-  },
-) => {
+export const buy = async ({
+  email,
+  delivery,
+  variants,
+}: {
+  email: string
+  delivery: boolean
+  variants?: Array<{ productId: number; variantId: number; quantity: number }>
+}) => {
   console.log("=== FUNCIÓN BUY INICIADA ===")
   console.log("Email:", email)
   console.log("Delivery:", delivery)
-  console.log("Items recibidos:", JSON.stringify(items, null, 2))
-  console.log("Variants:", JSON.stringify(variants, null, 2))
+  console.log("Variants recibidos:", JSON.stringify(variants, null, 2))
+
+  if (!variants || variants.length === 0) {
+    console.error("❌ No se encontraron variantes en los metadatos. No se puede crear la orden.")
+    return
+  }
 
   let userId
   const users = await db.select().from(usersTable).where(eq(usersTable.email, email))
@@ -313,24 +314,16 @@ export const buy = async (
     console.log("Usuario existente encontrado con ID:", userId)
   }
 
-  // Filtrar items que no sean el costo de delivery para evitar duplicados
-  const productItems = items.filter((item) => item.id !== "delivery-fee")
-  console.log("Items de productos (sin delivery fee):", JSON.stringify(productItems, null, 2))
-
   try {
-    // Preparar los datos para insertar
-    const ordersToInsert = productItems.map(({ id: productId, quantity }) => {
-      // Buscar la variante correspondiente si existe
-      const variant = variants?.find((v) => v.variantId && productId === v.variantId.toString())
-
+    // Preparar los datos para insertar desde las variantes
+    const ordersToInsert = variants.map(({ productId, variantId, quantity }) => {
       const orderData = {
-        productId: Number.parseInt(productId),
+        productId,
         userId,
         quantity,
         delivery,
-        variantId: variant?.variantId || null,
+        variantId: variantId || null,
       }
-
       console.log("Preparando orden:", JSON.stringify(orderData, null, 2))
       return orderData
     })
@@ -353,6 +346,13 @@ export const buy = async (
   }
 }
 
+export const getProductById = async (id: string) => {
+  const product = await db.query.productsTable.findFirst({
+    where: eq(productsTable.id, Number.parseInt(id)),
+  })
+  if (!product) throw new Error("Product not found")
+  return product
+}
 
 export const editUser = async (formData: FormData) => {
   const { id, streetNumber, dni, ...data } = z

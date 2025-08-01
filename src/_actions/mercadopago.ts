@@ -45,29 +45,31 @@ export async function createCheckoutSession(
     // Usar NEXTAUTH_URL que ya tienes configurada
     const baseUrl = process.env.NEXTAUTH_URL!
 
-        
     console.log("🌐 Base URL:", baseUrl)
 
     const result = await preference.create({
       body: {
         items: lineItems,
         metadata: {
-          email: email,
+          email: email || "",
           delivery: isDelivery,
           variants: items.map((item) => ({
-            variantId: item.variantId,
+            productId: item.id, // <-- AÑADIR ESTO
+            variantId: item.variantId || 0,
             quantity: item.quantity,
           })),
         },
         // 🔧 CONFIGURAR WEBHOOK usando NEXTAUTH_URL
         notification_url: `${baseUrl}/api/payments/webhook`,
 
-        // 🔧 URLs de retorno usando NEXTAUTH_URL
+        // 🔧 URLs de retorno OBLIGATORIAS para auto_return
         back_urls: {
-          success: `${baseUrl}/?payment=success`,
-          failure: `${baseUrl}/?payment=failure`,
-          pending: `${baseUrl}/?payment=pending`,
+          success: `${baseUrl}/?payment=success&status=approved`,
+          failure: `${baseUrl}/?payment=failure&status=rejected`,
+          pending: `${baseUrl}/?payment=pending&status=pending`,
         },
+
+        // 🔧 IMPORTANTE: auto_return requiere back_urls.success
         auto_return: "approved",
 
         // Configuraciones adicionales
@@ -77,17 +79,31 @@ export async function createCheckoutSession(
           installments: 6, // Máximo 6 cuotas
         },
 
-        // Configurar expiración
+        // Configurar expiración (24 horas)
         expires: true,
         expiration_date_from: new Date().toISOString(),
-        expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
+        expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+
+        // Información adicional
+        payer: email
+          ? {
+              email: email,
+            }
+          : undefined,
+
+        // Configuración de la experiencia de pago
+        statement_descriptor: "KRUZA",
       },
     })
 
     console.log("✅ Preferencia creada exitosamente")
     console.log("Preference ID:", result.id)
     console.log("Notification URL:", `${baseUrl}/api/payments/webhook`)
-    console.log("Success URL:", `${baseUrl}/?payment=success`)
+    console.log("Back URLs:", {
+      success: `${baseUrl}/?payment=success&status=approved`,
+      failure: `${baseUrl}/?payment=failure&status=rejected`,
+      pending: `${baseUrl}/?payment=pending&status=pending`,
+    })
 
     if (result.init_point) {
       redirectUrl = result.init_point
@@ -95,7 +111,7 @@ export async function createCheckoutSession(
       throw new Error("Failed to create checkout session")
     }
   } catch (error) {
-    console.error("Error creating checkout session:", error)
+    console.error("❌ Error creating checkout session:", error)
     throw new Error("Failed to create checkout session")
   }
 

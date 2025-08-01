@@ -35,8 +35,9 @@ const metadataSchema = z.object({
   variants: z
     .array(
       z.object({
-        variantId: z.number(),
-        quantity: z.number(),
+        productId: z.coerce.number(),
+        variantId: z.coerce.number(),
+        quantity: z.coerce.number(),
       }),
     )
     .optional(),
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
       console.log("Metadata:", JSON.stringify(metadata, null, 2))
 
       // Llamar a la función buy con los datos validados y la opción de delivery
-      await buy(validatedItems, metadata)
+      await buy(metadata)
 
       // Reducir el stock de las variantes
       if (metadata.variants && metadata.variants.length > 0) {
