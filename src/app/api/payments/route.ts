@@ -5,7 +5,7 @@ import { MercadoPagoConfig } from "mercadopago"
 import { buy } from "@/_actions/actions"
 import { reduceStock } from "@/_actions/stock-actions"
 
-export const client = new MercadoPagoConfig({
+const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
 })
 
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       console.log("Metadata:", JSON.stringify(metadata, null, 2))
 
       // Llamar a la función buy con los datos validados y la opción de delivery
-      await buy(metadata)
+      await buy(items, payment.metadata)
 
       // Reducir el stock de las variantes
       if (metadata.variants && metadata.variants.length > 0) {

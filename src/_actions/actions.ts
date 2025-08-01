@@ -279,72 +279,37 @@ export const getUser = async () => {
   })
 }
 
-export const buy = async ({
-  email,
-  delivery,
-  variants,
-}: {
-  email: string
-  delivery: boolean
-  variants?: Array<{ productId: number; variantId: number; quantity: number }>
-}) => {
-  console.log("=== FUNCIÓN BUY INICIADA ===")
-  console.log("Email:", email)
-  console.log("Delivery:", delivery)
-  console.log("Variants recibidos:", JSON.stringify(variants, null, 2))
-
-  if (!variants || variants.length === 0) {
-    console.error("❌ No se encontraron variantes en los metadatos. No se puede crear la orden.")
-    return
-  }
-
-  let userId
-  const users = await db.select().from(usersTable).where(eq(usersTable.email, email))
+export const buy = async (
+  items: Items[],
+  { email, delivery }: { email: string; delivery: boolean },
+) => {
+  let userId;
+  const users = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
 
   if (users.length === 0) {
-    console.log("Usuario no existe, creando nuevo usuario...")
     const [{ id }] = await db
       .insert(usersTable)
-      .values({ email, name: email.split("@")[0] })
-      .returning()
-    userId = id
-    console.log("Nuevo usuario creado con ID:", userId)
+      .values({ email, name: "" })
+      .returning();
+    userId = id;
   } else {
-    userId = users[0].id
-    console.log("Usuario existente encontrado con ID:", userId)
+    userId = users[0].id;
   }
 
-  try {
-    // Preparar los datos para insertar desde las variantes
-    const ordersToInsert = variants.map(({ productId, variantId, quantity }) => {
-      const orderData = {
-        productId,
-        userId,
-        quantity,
-        delivery,
-        variantId: variantId || null,
-      }
-      console.log("Preparando orden:", JSON.stringify(orderData, null, 2))
-      return orderData
-    })
+  await db.insert(usersToProducts).values(
+    items.map(({ id: productId, quantity }) => ({
+      productId: parseInt(productId),
+      userId,
+      quantity,
+      delivery,
+    })),
+  );
 
-    console.log("=== INSERTANDO ÓRDENES ===")
-    console.log("Órdenes a insertar:", JSON.stringify(ordersToInsert, null, 2))
-
-    const insertedOrders = await db.insert(usersToProducts).values(ordersToInsert).returning()
-
-    console.log("✅ Órdenes insertadas exitosamente:")
-    console.log("Órdenes creadas:", JSON.stringify(insertedOrders, null, 2))
-
-    revalidatePath("/admin/orders")
-    revalidatePath("/")
-
-    return { success: true, orders: insertedOrders }
-  } catch (error) {
-    console.error("❌ Error al insertar órdenes:", error)
-    throw error
-  }
-}
+  revalidatePath("/");
+};
 
 export const getProductById = async (id: string) => {
   const product = await db.query.productsTable.findFirst({
