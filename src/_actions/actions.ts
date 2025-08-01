@@ -279,47 +279,78 @@ export const getUser = async () => {
   })
 }
 
-export const buy = async (items: Items[], { email, delivery }: { email: string; delivery: boolean }) => {
-  console.log("=== DATOS RECIBIDOS EN BUY ===")
+export const buy = async (
+  items: Items[],
+  {
+    email,
+    delivery,
+    variants,
+  }: {
+    email: string
+    delivery: boolean
+    variants?: Array<{ variantId: number; quantity: number }>
+  },
+) => {
+  console.log("=== FUNCIÓN BUY INICIADA ===")
   console.log("Email:", email)
   console.log("Delivery:", delivery)
-  console.log("Items:", items)
+  console.log("Items recibidos:", JSON.stringify(items, null, 2))
+  console.log("Variants:", JSON.stringify(variants, null, 2))
 
   let userId
   const users = await db.select().from(usersTable).where(eq(usersTable.email, email))
 
   if (users.length === 0) {
-    const [{ id }] = await db.insert(usersTable).values({ email, name: "" }).returning()
+    console.log("Usuario no existe, creando nuevo usuario...")
+    const [{ id }] = await db
+      .insert(usersTable)
+      .values({ email, name: email.split("@")[0] })
+      .returning()
     userId = id
+    console.log("Nuevo usuario creado con ID:", userId)
   } else {
     userId = users[0].id
+    console.log("Usuario existente encontrado con ID:", userId)
   }
 
   // Filtrar items que no sean el costo de delivery para evitar duplicados
   const productItems = items.filter((item) => item.id !== "delivery-fee")
+  console.log("Items de productos (sin delivery fee):", JSON.stringify(productItems, null, 2))
 
-  await db.insert(usersToProducts).values(
-    productItems.map(({ id: productId, quantity }) => ({
-      productId: Number.parseInt(productId),
-      userId,
-      quantity,
-      delivery,
-    })),
-  )
+  try {
+    // Preparar los datos para insertar
+    const ordersToInsert = productItems.map(({ id: productId, quantity }) => {
+      // Buscar la variante correspondiente si existe
+      const variant = variants?.find((v) => v.variantId && productId === v.variantId.toString())
 
-  console.log("=== ORDEN GUARDADA ===")
-  console.log("User ID:", userId)
-  console.log("Delivery option:", delivery)
+      const orderData = {
+        productId: Number.parseInt(productId),
+        userId,
+        quantity,
+        delivery,
+        variantId: variant?.variantId || null,
+      }
 
-  revalidatePath("/")
-}
+      console.log("Preparando orden:", JSON.stringify(orderData, null, 2))
+      return orderData
+    })
 
-export const getProductById = async (id: string) => {
-  const product = await db.query.productsTable.findFirst({
-    where: eq(productsTable.id, Number.parseInt(id)),
-  })
-  if (!product) throw new Error("Product not found")
-  return product
+    console.log("=== INSERTANDO ÓRDENES ===")
+    console.log("Órdenes a insertar:", JSON.stringify(ordersToInsert, null, 2))
+
+    const insertedOrders = await db.insert(usersToProducts).values(ordersToInsert).returning()
+
+    console.log("✅ Órdenes insertadas exitosamente:")
+    console.log("Órdenes creadas:", JSON.stringify(insertedOrders, null, 2))
+
+    revalidatePath("/admin/orders")
+    revalidatePath("/")
+
+    return { success: true, orders: insertedOrders }
+  } catch (error) {
+    console.error("❌ Error al insertar órdenes:", error)
+    throw error
+  }
 }
 
 export const editUser = async (formData: FormData) => {

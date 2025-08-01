@@ -1,4 +1,4 @@
-import { getProductById } from "@/_actions/actions";
+import { getProductById } from "@/_actions/stock-actions";
 import { getColors, getProductVariants } from "@/_actions/stock-actions";
 import { redirect } from "next/navigation";
 import { ProductDetail } from "@/components/productDetail";

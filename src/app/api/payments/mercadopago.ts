@@ -46,12 +46,16 @@ export async function POST(request: NextRequest) {
   try {
     // Validar la notificación entrante
     const body = await request.json()
+
+    // 🔍 LOG DETALLADO PARA DEBUGGING
+    console.log("=== WEBHOOK MERCADO PAGO ===")
+    console.log("Body completo:", JSON.stringify(body, null, 2))
+
     const {
       data: { id },
       type = "payment",
     } = paymentSchema.parse(body)
 
-    // Log para depuración
     console.log(`Received webhook notification: Type=${type}, ID=${id}`)
 
     // Solo procesamos notificaciones de tipo 'payment'
@@ -63,8 +67,11 @@ export async function POST(request: NextRequest) {
     // Obtener los detalles del pago desde Mercado Pago
     const payment = await new Payment(client).get({ id })
 
-    // Log para depuración
-    console.log(`Payment status: ${payment.status}`)
+    // 🔍 LOG DEL PAGO COMPLETO
+    console.log("=== DETALLES DEL PAGO ===")
+    console.log("Payment status:", payment.status)
+    console.log("Payment metadata:", JSON.stringify(payment.metadata, null, 2))
+    console.log("Payment items:", JSON.stringify(payment.additional_info?.items, null, 2))
 
     // Verificar si el pago está aprobado
     if (payment.status !== "approved") {
@@ -91,28 +98,33 @@ export async function POST(request: NextRequest) {
       // Validar y extraer los metadatos
       const metadata = metadataSchema.parse(payment.metadata)
 
-      console.log(
-        `Processing purchase for email: ${metadata.email}, items: ${validatedItems.length}, delivery: ${metadata.delivery}`,
-      )
+      console.log("=== DATOS PROCESADOS ===")
+      console.log(`Processing purchase for email: ${metadata.email}`)
+      console.log(`Items: ${validatedItems.length}`)
+      console.log(`Delivery: ${metadata.delivery}`)
+      console.log("Validated items:", JSON.stringify(validatedItems, null, 2))
+      console.log("Metadata:", JSON.stringify(metadata, null, 2))
 
       // Llamar a la función buy con los datos validados y la opción de delivery
       await buy(validatedItems, metadata)
 
       // Reducir el stock de las variantes
       if (metadata.variants && metadata.variants.length > 0) {
+        console.log("=== REDUCIENDO STOCK ===")
         for (const variant of metadata.variants) {
+          console.log(`Reducing stock for variant ${variant.variantId} by ${variant.quantity}`)
           await reduceStock(variant.variantId, variant.quantity)
         }
       }
 
-      console.log(`Successfully processed payment ${id}`)
+      console.log(`✅ Successfully processed payment ${id}`)
       return Response.json({ success: true })
     } catch (validationError) {
-      console.error(`Validation error for payment ${id}:`, validationError)
+      console.error(`❌ Validation error for payment ${id}:`, validationError)
       return Response.json({ success: false, error: "Invalid data format" }, { status: 400 })
     }
   } catch (error) {
-    console.error("Error processing webhook:", error)
+    console.error("❌ Error processing webhook:", error)
     return Response.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }
