@@ -45,6 +45,7 @@ export async function createCheckoutSession(
     // Usar NEXTAUTH_URL que ya tienes configurada
     const baseUrl = process.env.NEXTAUTH_URL!
 
+        
     console.log("🌐 Base URL:", baseUrl)
 
     const result = await preference.create({
