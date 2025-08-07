@@ -9,6 +9,9 @@ const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
 })
 
+// Cache en memoria para pagos procesados (se resetea con cada deploy)
+const processedPayments = new Set<string>()
+
 // Esquema para notificaciones de payment (formato 1 - completo)
 const paymentNotificationSchema = z.object({
   data: z.object({
@@ -113,6 +116,17 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: true, message: "Unknown notification format" })
     }
 
+    // **VERIFICAR SI YA PROCESAMOS ESTE PAGO**
+    if (processedPayments.has(paymentId)) {
+      console.log(`🔄 Pago ${paymentId} ya fue procesado anteriormente, ignorando duplicado`)
+      return Response.json({ 
+        success: true, 
+        message: "Payment already processed",
+        paymentId: paymentId,
+        duplicate: true
+      })
+    }
+
     // **MANEJAR IDs DE PRUEBA DE MERCADO PAGO**
     if (paymentId === "1234567" || paymentId === "123456789") {
       console.log("🧪 ID de prueba detectado, simulando respuesta exitosa")
@@ -176,6 +190,10 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      // **MARCAR COMO PROCESADO ANTES DE PROCESAR**
+      processedPayments.add(paymentId)
+      console.log(`🔒 Pago ${paymentId} marcado como en proceso`)
+
       // Filtrar items que no sean delivery-fee y validarlos
       const productItems = items.filter(item => item.id !== "delivery-fee")
       console.log("📦 Items de productos (sin delivery):", JSON.stringify(productItems, null, 2))
@@ -241,6 +259,8 @@ export async function POST(request: NextRequest) {
       })
       
     } catch (validationError) {
+      // Si hay error, remover del cache para permitir reintento
+      processedPayments.delete(paymentId)
       console.error(`❌ Error de validación para pago ${paymentId}:`, validationError)
       console.error("Stack trace:", validationError instanceof Error ? validationError.stack : 'No stack trace')
       return Response.json({ 
@@ -271,6 +291,7 @@ export async function GET(request: NextRequest) {
     timestamp: new Date().toISOString(),
     url: request.url,
     methods: ["GET", "POST"],
-    status: "active"
+    status: "active",
+    processedPaymentsCount: processedPayments.size
   })
 }
