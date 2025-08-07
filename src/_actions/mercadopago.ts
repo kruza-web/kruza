@@ -42,8 +42,8 @@ export async function createCheckoutSession(
     console.log("Items formateados para Mercado Pago:", lineItems)
     console.log("Delivery option:", deliveryOption, "Delivery cost:", deliveryCost)
 
-    // Usar NEXTAUTH_URL que ya tienes configurada
-    const baseUrl = process.env.NEXTAUTH_URL!
+    // Usar NEXTAUTH_URL que ya tienes configurada y asegurar que no tenga barra al final
+    const baseUrl = process.env.NEXTAUTH_URL!.replace(/\/$/, '')
 
     console.log("🌐 Base URL:", baseUrl)
 
