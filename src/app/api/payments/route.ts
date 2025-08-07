@@ -9,9 +9,6 @@ const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
 })
 
-// Cache en memoria para pagos procesados (se resetea con cada deploy)
-const processedPayments = new Set<string>()
-
 // Esquema para notificaciones de payment (formato 1 - completo)
 const paymentNotificationSchema = z.object({
   data: z.object({
@@ -116,17 +113,6 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: true, message: "Unknown notification format" })
     }
 
-    // **VERIFICAR SI YA PROCESAMOS ESTE PAGO**
-    if (processedPayments.has(paymentId)) {
-      console.log(`🔄 Pago ${paymentId} ya fue procesado anteriormente, ignorando duplicado`)
-      return Response.json({ 
-        success: true, 
-        message: "Payment already processed",
-        paymentId: paymentId,
-        duplicate: true
-      })
-    }
-
     // **MANEJAR IDs DE PRUEBA DE MERCADO PAGO**
     if (paymentId === "1234567" || paymentId === "123456789") {
       console.log("🧪 ID de prueba detectado, simulando respuesta exitosa")
@@ -190,10 +176,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // **MARCAR COMO PROCESADO ANTES DE PROCESAR**
-      processedPayments.add(paymentId)
-      console.log(`🔒 Pago ${paymentId} marcado como en proceso`)
-
       // Filtrar items que no sean delivery-fee y validarlos
       const productItems = items.filter(item => item.id !== "delivery-fee")
       console.log("📦 Items de productos (sin delivery):", JSON.stringify(productItems, null, 2))
@@ -223,18 +205,19 @@ export async function POST(request: NextRequest) {
 
       console.log("🔄 Variants convertidas:", JSON.stringify(convertedVariants, null, 2))
 
-      // Llamar a la función buy con los datos validados
+      // **LLAMAR A BUY CON PAYMENT ID**
       console.log("💾 Llamando a función buy...")
       const insertedOrders = await buy(validatedItems, {
         email: metadata.email,
         delivery: metadata.delivery,
-        variants: convertedVariants // Usar las variants convertidas
+        variants: convertedVariants,
+        paymentId: paymentId // **PASAR EL PAYMENT ID**
       })
 
       console.log("✅ Órdenes insertadas:", insertedOrders?.length || 0)
 
-      // Reducir el stock de las variantes
-      if (convertedVariants && convertedVariants.length > 0) {
+      // **SOLO REDUCIR STOCK SI SE CREARON NUEVAS ÓRDENES**
+      if (insertedOrders && insertedOrders.length > 0 && convertedVariants && convertedVariants.length > 0) {
         console.log("📉 Reduciendo stock de variantes...")
         for (const variant of convertedVariants) {
           if (variant.variantId && variant.variantId > 0) {
@@ -248,19 +231,27 @@ export async function POST(request: NextRequest) {
             }
           }
         }
+        
+        console.log(`🎉 Pago ${paymentId} procesado exitosamente - NUEVAS ÓRDENES CREADAS`)
+        return Response.json({ 
+          success: true, 
+          message: "Payment processed successfully - new orders created",
+          ordersCreated: insertedOrders.length,
+          paymentId: paymentId,
+          duplicate: false
+        })
+      } else {
+        console.log(`🔄 Pago ${paymentId} ya fue procesado anteriormente - NO SE CREARON NUEVAS ÓRDENES`)
+        return Response.json({ 
+          success: true, 
+          message: "Payment already processed - no new orders created",
+          ordersCreated: 0,
+          paymentId: paymentId,
+          duplicate: true
+        })
       }
-
-      console.log(`🎉 Pago ${paymentId} procesado exitosamente`)
-      return Response.json({ 
-        success: true, 
-        message: "Payment processed successfully",
-        ordersCreated: insertedOrders?.length || 0,
-        paymentId: paymentId
-      })
       
     } catch (validationError) {
-      // Si hay error, remover del cache para permitir reintento
-      processedPayments.delete(paymentId)
       console.error(`❌ Error de validación para pago ${paymentId}:`, validationError)
       console.error("Stack trace:", validationError instanceof Error ? validationError.stack : 'No stack trace')
       return Response.json({ 
@@ -291,7 +282,6 @@ export async function GET(request: NextRequest) {
     timestamp: new Date().toISOString(),
     url: request.url,
     methods: ["GET", "POST"],
-    status: "active",
-    processedPaymentsCount: processedPayments.size
+    status: "active"
   })
 }

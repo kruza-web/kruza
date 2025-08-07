@@ -12,7 +12,7 @@ import {
   productVariantsTable,
 } from "@/db/schema"
 import { db } from "@/db"
-import { eq } from "drizzle-orm"
+import { eq, sql, and } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import type { SelectUserToProduct } from "@/db/schema"
 import { getServerSession } from "next-auth"
@@ -257,13 +257,43 @@ export const changeStatus = async ({
 }
 
 export const getOrders = async () => {
-  return await db.query.usersToProducts.findMany({
-    with: {
-      user: true,
-      product: true,
-    },
-  })
-}
+  try {
+    console.log("=== EJECUTANDO getOrders ===");
+    
+    // Primero verificar la conexión a la base de datos
+    const ordersCount = await db.select({ count: sql`count(*)` }).from(usersToProducts);
+    console.log("Total de registros en usersToProducts:", ordersCount[0]?.count);
+
+    // Obtener las órdenes con relaciones
+    const orders = await db.query.usersToProducts.findMany({
+      with: {
+        user: true,
+        product: true,
+        variant: true, // También incluir la variante si existe
+      },
+      orderBy: (usersToProducts, { desc }) => [desc(usersToProducts.purchasedAt)], // Ordenar por fecha más reciente
+    });
+
+    console.log("Órdenes encontradas:", orders.length);
+    
+    // Verificar la estructura de las primeras órdenes
+    if (orders.length > 0) {
+      console.log("Estructura de la primera orden:");
+      console.log("- ID:", orders[0].id);
+      console.log("- Product ID:", orders[0].productId);
+      console.log("- User ID:", orders[0].userId);
+      console.log("- Payment ID:", orders[0].paymentId);
+      console.log("- Tiene producto:", !!orders[0].product);
+      console.log("- Tiene usuario:", !!orders[0].user);
+      console.log("- Tiene variante:", !!orders[0].variant);
+    }
+
+    return orders;
+  } catch (error) {
+    console.error("❌ Error en getOrders:", error);
+    throw new Error(`Error obteniendo órdenes: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+  }
+};
 
 export const getUsers = async () => {
   return await db.select().from(usersTable)
@@ -284,7 +314,8 @@ export const buy = async (
   { 
     email, 
     delivery, 
-    variants = [] 
+    variants = [],
+    paymentId // **NUEVO PARÁMETRO**
   }: { 
     email: string; 
     delivery: boolean;
@@ -293,67 +324,92 @@ export const buy = async (
       variantId: number;
       quantity: number;
     }>;
+    paymentId?: string; // **NUEVO PARÁMETRO OPCIONAL**
   },
 ) => {
-  console.log("=== FUNCIÓN BUY ===")
+  console.log("=== FUNCIÓN BUY INICIADA ===")
+  console.log("Timestamp:", new Date().toISOString())
   console.log("Email:", email)
   console.log("Delivery:", delivery)
-  console.log("Items:", JSON.stringify(items, null, 2))
-  console.log("Variants:", JSON.stringify(variants, null, 2))
-
-  let userId;
-  const users = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
-
-  if (users.length === 0) {
-    console.log("Creando nuevo usuario...")
-    const [{ id }] = await db
-      .insert(usersTable)
-      .values({ email, name: email.split('@')[0] }) // Usar parte del email como nombre temporal
-      .returning();
-    userId = id;
-    console.log("Usuario creado con ID:", userId)
-  } else {
-    userId = users[0].id;
-    console.log("Usuario existente con ID:", userId)
-  }
-
-  // Crear las órdenes en usersToProducts
-  const ordersToInsert = items.map((item) => {
-    // Buscar la variante correspondiente si existe
-    const variant = variants.find(v => v.productId === parseInt(item.id))
-    
-    console.log(`Procesando item ${item.id}:`, {
-      productId: parseInt(item.id),
-      quantity: item.quantity,
-      variantId: variant?.variantId || null,
-      delivery
-    })
-
-    return {
-      productId: parseInt(item.id),
-      userId,
-      quantity: item.quantity,
-      delivery,
-      variantId: variant?.variantId || null,
-      status: "pending" as const
-    }
-  })
-
-  console.log("Órdenes a insertar:", JSON.stringify(ordersToInsert, null, 2))
+  console.log("Payment ID:", paymentId)
+  console.log("Items recibidos:", JSON.stringify(items, null, 2))
+  console.log("Variants recibidas:", JSON.stringify(variants, null, 2))
 
   try {
+    // **VERIFICAR SI YA EXISTE UNA ORDEN CON ESTE PAYMENT ID**
+    if (paymentId) {
+      console.log(`🔍 Verificando si ya existe orden con paymentId: ${paymentId}`)
+      const existingOrder = await db
+        .select()
+        .from(usersToProducts)
+        .where(eq(usersToProducts.paymentId, paymentId))
+        .limit(1)
+
+      if (existingOrder.length > 0) {
+        console.log(`🔄 Ya existe una orden con paymentId ${paymentId}, evitando duplicado`)
+        return [] // Retornar array vacío para indicar que no se crearon nuevas órdenes
+      }
+    }
+
+    // Verificar/crear usuario
+    console.log("👤 Verificando usuario...")
+    let userId;
+    const users = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email));
+
+    if (users.length === 0) {
+      console.log("👤 Usuario no existe, creando nuevo...")
+      const [{ id }] = await db
+        .insert(usersTable)
+        .values({ email, name: email.split('@')[0] })
+        .returning();
+      userId = id;
+      console.log("✅ Usuario creado con ID:", userId)
+    } else {
+      userId = users[0].id;
+      console.log("✅ Usuario existente con ID:", userId)
+    }
+
+    // Preparar órdenes para insertar
+    console.log("📦 Preparando órdenes para insertar...")
+    const ordersToInsert = items.map((item, index) => {
+      const variant = variants.find(v => v.productId === parseInt(item.id))
+      
+      const orderData = {
+        productId: parseInt(item.id),
+        userId,
+        quantity: item.quantity,
+        delivery,
+        variantId: variant?.variantId || null,
+        status: "pending" as const,
+        paymentId: paymentId || null // **INCLUIR PAYMENT ID**
+      }
+      
+      console.log(`📦 Item ${index + 1}:`, orderData)
+      return orderData
+    })
+
+    console.log("💾 Insertando órdenes en base de datos...")
+    console.log("Datos a insertar:", JSON.stringify(ordersToInsert, null, 2))
+
     const insertedOrders = await db.insert(usersToProducts).values(ordersToInsert).returning()
-    console.log("✅ Órdenes insertadas exitosamente:", insertedOrders.length)
     
+    console.log("✅ ÓRDENES INSERTADAS EXITOSAMENTE")
+    console.log("Cantidad de órdenes insertadas:", insertedOrders.length)
+    console.log("IDs de órdenes insertadas:", insertedOrders.map(o => o.id))
+    
+    // Revalidar rutas
+    console.log("🔄 Revalidando rutas...")
     revalidatePath("/admin/orders")
     revalidatePath("/")
     
     return insertedOrders
   } catch (error) {
-    console.error("❌ Error insertando órdenes:", error)
+    console.error("❌ ERROR CRÍTICO EN FUNCIÓN BUY:")
+    console.error("Error message:", error instanceof Error ? error.message : 'Unknown error')
+    console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace')
     throw error
   }
 };
@@ -398,3 +454,53 @@ export const getUserOrders = async (userId: number) => {
     where: eq(usersToProducts.userId, userId),
   })
 }
+
+// Función de diagnóstico para verificar la estructura de la base de datos
+export const diagnoseDatabase = async () => {
+  try {
+    console.log("=== DIAGNÓSTICO DE BASE DE DATOS ===");
+    
+    // Verificar usuarios
+    const users = await db.select().from(usersTable).limit(5);
+    console.log("Usuarios en la base de datos:", users.length);
+    
+    // Verificar productos
+    const products = await db.select().from(productsTable).limit(5);
+    console.log("Productos en la base de datos:", products.length);
+    
+    // Verificar órdenes
+    const orders = await db.select().from(usersToProducts).limit(5);
+    console.log("Órdenes en la base de datos:", orders.length);
+    
+    // Verificar variantes
+    const variants = await db.select().from(productVariantsTable).limit(5);
+    console.log("Variantes en la base de datos:", variants.length);
+    
+    // Verificar relaciones
+    if (orders.length > 0) {
+      const orderWithRelations = await db.query.usersToProducts.findFirst({
+        with: {
+          user: true,
+          product: true,
+          variant: true,
+        },
+      });
+      
+      console.log("Orden con relaciones:", {
+        hasUser: !!orderWithRelations?.user,
+        hasProduct: !!orderWithRelations?.product,
+        hasVariant: !!orderWithRelations?.variant,
+      });
+    }
+    
+    return {
+      users: users.length,
+      products: products.length,
+      orders: orders.length,
+      variants: variants.length,
+    };
+  } catch (error) {
+    console.error("❌ Error en diagnóstico:", error);
+    throw error;
+  }
+};

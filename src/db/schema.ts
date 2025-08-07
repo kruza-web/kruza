@@ -75,6 +75,8 @@ export const usersToProducts = sqliteTable("users_to_products", {
     .notNull()
     .default("pending"),
   purchasedAt: text("purchased_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+  // **NUEVO CAMPO PARA EVITAR DUPLICADOS**
+  paymentId: text("payment_id"), // ID del pago de Mercado Pago
 })
 
 // Relaciones
