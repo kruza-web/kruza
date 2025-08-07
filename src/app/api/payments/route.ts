@@ -9,8 +9,8 @@ const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
 })
 
-// Esquema para validar la notificación de pago
-const paymentSchema = z.object({
+// Esquema para notificaciones de payment
+const paymentNotificationSchema = z.object({
   data: z.object({
     id: z.string(),
   }),
@@ -18,27 +18,39 @@ const paymentSchema = z.object({
   action: z.string().optional(),
 })
 
-// Esquema para validar los items de Mercado Pago
+// Esquema para notificaciones de merchant_order
+const merchantOrderNotificationSchema = z.object({
+  resource: z.string(),
+  topic: z.literal("merchant_order"),
+})
+
+// Esquema unificado que maneja ambos tipos
+const webhookNotificationSchema = z.union([
+  paymentNotificationSchema,
+  merchantOrderNotificationSchema,
+])
+
+// Esquema para validar los items de Mercado Pago (con coerción de tipos)
 const mpItemSchema = z.object({
   id: z.string(),
-  quantity: z.number(),
+  quantity: z.coerce.number(), // Convierte string a number
   title: z.string(),
   description: z.string().optional(),
   category_id: z.string().optional(),
-  unit_price: z.number(),
-  variant_id: z.number().optional(),
+  unit_price: z.coerce.number(), // Convierte string a number
+  variant_id: z.coerce.number().optional(),
 })
 
-// Esquema para validar los metadatos
+// Esquema para validar los metadatos (ajustado al formato real de MP)
 const metadataSchema = z.object({
   email: z.string(),
-  delivery: z.boolean().default(false),
+  delivery: z.coerce.boolean().default(false),
   variants: z
     .array(
       z.object({
-        productId: z.coerce.number(),
-        variantId: z.coerce.number(),
-        quantity: z.coerce.number(),
+        product_id: z.coerce.number(), // MP usa product_id, no productId
+        variant_id: z.coerce.number(), // MP usa variant_id, no variantId
+        quantity: z.coerce.number(),   // Convertir string a number
       }),
     )
     .optional()
@@ -62,11 +74,24 @@ export async function POST(request: NextRequest) {
     console.log("=== BODY COMPLETO DEL WEBHOOK ===")
     console.log(JSON.stringify(body, null, 2))
 
+    // Validar el tipo de notificación
+    const notification = webhookNotificationSchema.parse(body)
+
+    // Manejar notificaciones de merchant_order
+    if ('topic' in notification && notification.topic === 'merchant_order') {
+      console.log("📦 Notificación de merchant_order recibida, ignorando...")
+      return Response.json({ 
+        success: true, 
+        message: "Merchant order notification ignored" 
+      })
+    }
+
+    // Es una notificación de payment
     const {
       data: { id },
       type = "payment",
       action,
-    } = paymentSchema.parse(body)
+    } = notification as z.infer<typeof paymentNotificationSchema>
 
     console.log(`📨 Notificación recibida: Type=${type}, Action=${action}, ID=${id}`)
 
@@ -159,20 +184,29 @@ export async function POST(request: NextRequest) {
       console.log("📋 Items validados:", JSON.stringify(validatedItems, null, 2))
       console.log("🔧 Metadata variants:", JSON.stringify(metadata.variants, null, 2))
 
+      // Convertir el formato de variants de MP al formato esperado por buy()
+      const convertedVariants = metadata.variants.map(variant => ({
+        productId: variant.product_id,  // Convertir product_id a productId
+        variantId: variant.variant_id,  // Convertir variant_id a variantId
+        quantity: variant.quantity,
+      }))
+
+      console.log("🔄 Variants convertidas:", JSON.stringify(convertedVariants, null, 2))
+
       // Llamar a la función buy con los datos validados
       console.log("💾 Llamando a función buy...")
       const insertedOrders = await buy(validatedItems, {
         email: metadata.email,
         delivery: metadata.delivery,
-        variants: metadata.variants || []
+        variants: convertedVariants // Usar las variants convertidas
       })
 
       console.log("✅ Órdenes insertadas:", insertedOrders?.length || 0)
 
       // Reducir el stock de las variantes
-      if (metadata.variants && metadata.variants.length > 0) {
+      if (convertedVariants && convertedVariants.length > 0) {
         console.log("📉 Reduciendo stock de variantes...")
-        for (const variant of metadata.variants) {
+        for (const variant of convertedVariants) {
           if (variant.variantId && variant.variantId > 0) {
             console.log(`📉 Reduciendo stock: variant ${variant.variantId} por ${variant.quantity}`)
             try {
@@ -190,7 +224,8 @@ export async function POST(request: NextRequest) {
       return Response.json({ 
         success: true, 
         message: "Payment processed successfully",
-        ordersCreated: insertedOrders?.length || 0
+        ordersCreated: insertedOrders?.length || 0,
+        paymentId: id
       })
       
     } catch (validationError) {
