@@ -9,7 +9,7 @@ const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
 })
 
-// Esquema para notificaciones de payment
+// Esquema para notificaciones de payment (formato 1 - completo)
 const paymentNotificationSchema = z.object({
   data: z.object({
     id: z.string(),
@@ -18,15 +18,22 @@ const paymentNotificationSchema = z.object({
   action: z.string().optional(),
 })
 
+// Esquema para notificaciones de payment (formato 2 - simple)
+const paymentResourceNotificationSchema = z.object({
+  resource: z.string(), // El ID del pago viene aquí
+  topic: z.literal("payment"),
+})
+
 // Esquema para notificaciones de merchant_order
 const merchantOrderNotificationSchema = z.object({
   resource: z.string(),
   topic: z.literal("merchant_order"),
 })
 
-// Esquema unificado que maneja ambos tipos
+// Esquema unificado que maneja todos los tipos
 const webhookNotificationSchema = z.union([
   paymentNotificationSchema,
+  paymentResourceNotificationSchema,
   merchantOrderNotificationSchema,
 ])
 
@@ -86,30 +93,35 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Es una notificación de payment
-    const {
-      data: { id },
-      type = "payment",
-      action,
-    } = notification as z.infer<typeof paymentNotificationSchema>
+    // Extraer el ID del pago según el formato
+    let paymentId: string
+    let type = "payment"
+    let action: string | undefined
 
-    console.log(`📨 Notificación recibida: Type=${type}, Action=${action}, ID=${id}`)
+    if ('data' in notification) {
+      // Formato 1: { data: { id: "..." }, type: "payment", action: "..." }
+      paymentId = notification.data.id
+      type = notification.type || "payment"
+      action = notification.action
+      console.log(`📨 Notificación formato 1: Type=${type}, Action=${action}, ID=${paymentId}`)
+    } else if ('resource' in notification && notification.topic === 'payment') {
+      // Formato 2: { resource: "...", topic: "payment" }
+      paymentId = notification.resource
+      console.log(`📨 Notificación formato 2: Topic=${notification.topic}, ID=${paymentId}`)
+    } else {
+      console.log("⏭️ Formato de notificación no reconocido")
+      return Response.json({ success: true, message: "Unknown notification format" })
+    }
 
     // **MANEJAR IDs DE PRUEBA DE MERCADO PAGO**
-    if (id === "1234567" || id === "123456789") {
+    if (paymentId === "1234567" || paymentId === "123456789") {
       console.log("🧪 ID de prueba detectado, simulando respuesta exitosa")
       return Response.json({ 
         success: true, 
         message: "Test webhook processed successfully",
         testMode: true,
-        paymentId: id
+        paymentId: paymentId
       })
-    }
-
-    // Solo procesamos notificaciones de tipo 'payment'
-    if (type !== "payment") {
-      console.log(`⏭️ Ignorando notificación no-payment: ${type}`)
-      return Response.json({ success: true, message: "Not a payment notification" })
     }
 
     console.log("🔍 Obteniendo detalles del pago desde Mercado Pago...")
@@ -117,7 +129,7 @@ export async function POST(request: NextRequest) {
     let payment;
     try {
       // Obtener los detalles del pago desde Mercado Pago
-      payment = await new Payment(client).get({ id })
+      payment = await new Payment(client).get({ id: paymentId })
     } catch (mpError) {
       console.error("❌ Error obteniendo pago de Mercado Pago:", mpError)
       
@@ -128,7 +140,7 @@ export async function POST(request: NextRequest) {
           success: true, 
           message: "Test payment ID not found - this is expected for webhook testing",
           testMode: true,
-          paymentId: id
+          paymentId: paymentId
         })
       }
       
@@ -145,7 +157,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar si el pago está aprobado
     if (payment.status !== "approved") {
-      console.log(`❌ Pago ${id} no aprobado. Status: ${payment.status}`)
+      console.log(`❌ Pago ${paymentId} no aprobado. Status: ${payment.status}`)
       return Response.json({ success: true, message: `Payment not approved. Status: ${payment.status}` })
     }
 
@@ -154,12 +166,12 @@ export async function POST(request: NextRequest) {
     // Verificar que tenemos los items y metadata necesarios
     const items = payment.additional_info?.items
     if (!items || items.length === 0) {
-      console.error(`❌ Items faltantes en pago ${id}`)
+      console.error(`❌ Items faltantes en pago ${paymentId}`)
       return Response.json({ success: false, message: "Missing items" }, { status: 400 })
     }
 
     if (!payment.metadata) {
-      console.error(`❌ Metadata faltante en pago ${id}`)
+      console.error(`❌ Metadata faltante en pago ${paymentId}`)
       return Response.json({ success: false, message: "Missing metadata" }, { status: 400 })
     }
 
@@ -220,16 +232,16 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      console.log(`🎉 Pago ${id} procesado exitosamente`)
+      console.log(`🎉 Pago ${paymentId} procesado exitosamente`)
       return Response.json({ 
         success: true, 
         message: "Payment processed successfully",
         ordersCreated: insertedOrders?.length || 0,
-        paymentId: id
+        paymentId: paymentId
       })
       
     } catch (validationError) {
-      console.error(`❌ Error de validación para pago ${id}:`, validationError)
+      console.error(`❌ Error de validación para pago ${paymentId}:`, validationError)
       console.error("Stack trace:", validationError instanceof Error ? validationError.stack : 'No stack trace')
       return Response.json({ 
         success: false, 
