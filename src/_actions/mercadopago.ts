@@ -53,57 +53,27 @@ export async function createCheckoutSession(
         metadata: {
           email: email || "",
           delivery: isDelivery,
-          variants: items.map((item) => ({
-            productId: item.id, // <-- AÑADIR ESTO
-            variantId: item.variantId || 0,
-            quantity: item.quantity,
-          })),
+          variants: items
+            .filter(item => item.variantId) // Solo incluir items con variantId
+            .map((item) => ({
+              productId: item.id.toString(), // Convertir a string para metadatos
+              variantId: item.variantId?.toString() || "0",
+              quantity: item.quantity.toString(),
+            })),
         },
-        // 🔧 CONFIGURAR WEBHOOK usando NEXTAUTH_URL
-        notification_url: `${baseUrl}/api/payments/webhook`,
-
-        // 🔧 URLs de retorno OBLIGATORIAS para auto_return
+        notification_url: `${baseUrl}/api/payments`,
         back_urls: {
           success: `${baseUrl}/?payment=success&status=approved`,
           failure: `${baseUrl}/?payment=failure&status=rejected`,
           pending: `${baseUrl}/?payment=pending&status=pending`,
         },
-
-        // 🔧 IMPORTANTE: auto_return requiere back_urls.success
         auto_return: "approved",
-
-        // Configuraciones adicionales
-        payment_methods: {
-          excluded_payment_methods: [],
-          excluded_payment_types: [],
-          installments: 6, // Máximo 6 cuotas
-        },
-
-        // Configurar expiración (24 horas)
-        expires: true,
-        expiration_date_from: new Date().toISOString(),
-        expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-
-        // Información adicional
-        payer: email
-          ? {
-              email: email,
-            }
-          : undefined,
-
-        // Configuración de la experiencia de pago
-        statement_descriptor: "KRUZA",
       },
     })
 
     console.log("✅ Preferencia creada exitosamente")
     console.log("Preference ID:", result.id)
-    console.log("Notification URL:", `${baseUrl}/api/payments/webhook`)
-    console.log("Back URLs:", {
-      success: `${baseUrl}/?payment=success&status=approved`,
-      failure: `${baseUrl}/?payment=failure&status=rejected`,
-      pending: `${baseUrl}/?payment=pending&status=pending`,
-    })
+    console.log("Notification URL:", `${baseUrl}/api/payments`)
 
     if (result.init_point) {
       redirectUrl = result.init_point

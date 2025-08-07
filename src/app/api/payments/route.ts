@@ -40,7 +40,8 @@ const metadataSchema = z.object({
         quantity: z.coerce.number(),
       }),
     )
-    .optional(),
+    .optional()
+    .default([]),
 })
 
 export async function POST(request: NextRequest) {
@@ -48,7 +49,6 @@ export async function POST(request: NextRequest) {
     // Validar la notificación entrante
     const body = await request.json()
 
-    // 🔍 LOG DETALLADO PARA DEBUGGING
     console.log("=== WEBHOOK MERCADO PAGO ===")
     console.log("Body completo:", JSON.stringify(body, null, 2))
 
@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
     // Obtener los detalles del pago desde Mercado Pago
     const payment = await new Payment(client).get({ id })
 
-    // 🔍 LOG DEL PAGO COMPLETO
     console.log("=== DETALLES DEL PAGO ===")
     console.log("Payment status:", payment.status)
     console.log("Payment metadata:", JSON.stringify(payment.metadata, null, 2))
@@ -93,8 +92,9 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Validar y transformar los items
-      const validatedItems = items.map((item) => mpItemSchema.parse(item))
+      // Filtrar items que no sean delivery-fee y validarlos
+      const productItems = items.filter(item => item.id !== "delivery-fee")
+      const validatedItems = productItems.map((item) => mpItemSchema.parse(item))
 
       // Validar y extraer los metadatos
       const metadata = metadataSchema.parse(payment.metadata)
@@ -104,17 +104,23 @@ export async function POST(request: NextRequest) {
       console.log(`Items: ${validatedItems.length}`)
       console.log(`Delivery: ${metadata.delivery}`)
       console.log("Validated items:", JSON.stringify(validatedItems, null, 2))
-      console.log("Metadata:", JSON.stringify(metadata, null, 2))
+      console.log("Metadata variants:", JSON.stringify(metadata.variants, null, 2))
 
-      // Llamar a la función buy con los datos validados y la opción de delivery
-      await buy(items, payment.metadata)
+      // Llamar a la función buy con los datos validados
+      await buy(validatedItems, {
+        email: metadata.email,
+        delivery: metadata.delivery,
+        variants: metadata.variants || []
+      })
 
       // Reducir el stock de las variantes
       if (metadata.variants && metadata.variants.length > 0) {
         console.log("=== REDUCIENDO STOCK ===")
         for (const variant of metadata.variants) {
-          console.log(`Reducing stock for variant ${variant.variantId} by ${variant.quantity}`)
-          await reduceStock(variant.variantId, variant.quantity)
+          if (variant.variantId && variant.variantId > 0) {
+            console.log(`Reducing stock for variant ${variant.variantId} by ${variant.quantity}`)
+            await reduceStock(variant.variantId, variant.quantity)
+          }
         }
       }
 

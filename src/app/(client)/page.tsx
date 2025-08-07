@@ -76,8 +76,7 @@ export default async function Home() {
         </div>
       </div>
 
-        <ProductCarousel products={productsWithSoldOutFlag} />
-
+      <ProductCarousel products={productsWithSoldOutFlag} />
 
       {/* PROMO BANNER */}
       <PromoBanner />

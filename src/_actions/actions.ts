@@ -281,8 +281,26 @@ export const getUser = async () => {
 
 export const buy = async (
   items: Items[],
-  { email, delivery }: { email: string; delivery: boolean },
+  { 
+    email, 
+    delivery, 
+    variants = [] 
+  }: { 
+    email: string; 
+    delivery: boolean;
+    variants?: Array<{
+      productId: number;
+      variantId: number;
+      quantity: number;
+    }>;
+  },
 ) => {
+  console.log("=== FUNCIÓN BUY ===")
+  console.log("Email:", email)
+  console.log("Delivery:", delivery)
+  console.log("Items:", JSON.stringify(items, null, 2))
+  console.log("Variants:", JSON.stringify(variants, null, 2))
+
   let userId;
   const users = await db
     .select()
@@ -290,25 +308,54 @@ export const buy = async (
     .where(eq(usersTable.email, email));
 
   if (users.length === 0) {
+    console.log("Creando nuevo usuario...")
     const [{ id }] = await db
       .insert(usersTable)
-      .values({ email, name: "" })
+      .values({ email, name: email.split('@')[0] }) // Usar parte del email como nombre temporal
       .returning();
     userId = id;
+    console.log("Usuario creado con ID:", userId)
   } else {
     userId = users[0].id;
+    console.log("Usuario existente con ID:", userId)
   }
 
-  await db.insert(usersToProducts).values(
-    items.map(({ id: productId, quantity }) => ({
-      productId: parseInt(productId),
-      userId,
-      quantity,
-      delivery,
-    })),
-  );
+  // Crear las órdenes en usersToProducts
+  const ordersToInsert = items.map((item) => {
+    // Buscar la variante correspondiente si existe
+    const variant = variants.find(v => v.productId === parseInt(item.id))
+    
+    console.log(`Procesando item ${item.id}:`, {
+      productId: parseInt(item.id),
+      quantity: item.quantity,
+      variantId: variant?.variantId || null,
+      delivery
+    })
 
-  revalidatePath("/");
+    return {
+      productId: parseInt(item.id),
+      userId,
+      quantity: item.quantity,
+      delivery,
+      variantId: variant?.variantId || null,
+      status: "pending" as const
+    }
+  })
+
+  console.log("Órdenes a insertar:", JSON.stringify(ordersToInsert, null, 2))
+
+  try {
+    const insertedOrders = await db.insert(usersToProducts).values(ordersToInsert).returning()
+    console.log("✅ Órdenes insertadas exitosamente:", insertedOrders.length)
+    
+    revalidatePath("/admin/orders")
+    revalidatePath("/")
+    
+    return insertedOrders
+  } catch (error) {
+    console.error("❌ Error insertando órdenes:", error)
+    throw error
+  }
 };
 
 export const getProductById = async (id: string) => {
