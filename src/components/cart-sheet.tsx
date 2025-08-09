@@ -36,6 +36,7 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
   const [showDeliveryForm, setShowDeliveryForm] = useState(false)
   const [hasCompleteDeliveryInfo, setHasCompleteDeliveryInfo] = useState(false)
   const [isCheckingDeliveryInfo, setIsCheckingDeliveryInfo] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Verificar si el usuario tiene información de delivery completa
   useEffect(() => {
@@ -82,9 +83,20 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
     return hasCompleteDeliveryInfo && !showDeliveryForm
   }
 
-  const handleCheckout = () => {
-    if (canProceedToCheckout()) {
-      createCheckoutSession(items, email, deliveryOption, deliveryCost)
+  const handleCheckout = async () => {
+    if (!canProceedToCheckout() || isCheckingDeliveryInfo || isProcessing) return
+    try {
+      setIsProcessing(true)
+      // Vaciar el carrito antes de iniciar el checkout (independientemente del resultado)
+      clearCart()
+      // Iniciar checkout de Mercado Pago (esto realizará redirect en el servidor)
+      await createCheckoutSession(items, email, deliveryOption, deliveryCost)
+    } catch (error) {
+      console.error("Error iniciando checkout:", error)
+      // Nota: A pedido tuyo, no restauramos el carrito si falla.
+    } finally {
+      // En la práctica, si redirect ocurre, esto no se ejecutará.
+      setIsProcessing(false)
     }
   }
 
@@ -195,8 +207,15 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                   <Trash2 className="size-4" />
                   Vaciar carrito
                 </Button>
-                <Button onClick={handleCheckout} disabled={!canProceedToCheckout() || isCheckingDeliveryInfo}>
-                  {deliveryOption === "delivery" && !hasCompleteDeliveryInfo ? "Completar datos" : "Comprar"}
+                <Button
+                  onClick={handleCheckout}
+                  disabled={!canProceedToCheckout() || isCheckingDeliveryInfo || isProcessing}
+                >
+                  {isProcessing
+                    ? "Redirigiendo..."
+                    : deliveryOption === "delivery" && !hasCompleteDeliveryInfo
+                      ? "Completar datos"
+                      : "Comprar"}
                 </Button>
               </div>
             </SheetFooter>

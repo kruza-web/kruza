@@ -144,20 +144,35 @@ export const deleteProduct = async (formData: FormData) => {
     })
     .parse(Object.fromEntries(formData))
 
-  // 1. Borra variantes relacionadas
-  await db.delete(productVariantsTable).where(eq(productVariantsTable.productId, Number.parseInt(id)))
+  const productId = Number.parseInt(id)
 
-  // 2. Borra otras relaciones si existen (ejemplo: usersToProducts)
-  await db.delete(usersToProducts).where(eq(usersToProducts.productId, Number.parseInt(id)))
+  try {
+    // 1) Eliminar en orden correcto dentro de una transacción:
+    //    - primero users_to_products (hijos)
+    //    - luego product_variants
+    //    - por último products
+    await db.transaction(async (tx) => {
+      await tx.delete(usersToProducts).where(eq(usersToProducts.productId, productId))
+      await tx.delete(productVariantsTable).where(eq(productVariantsTable.productId, productId))
+      await tx.delete(productsTable).where(eq(productsTable.id, productId))
+    })
 
-  await Promise.all([
-    db.delete(productsTable).where(eq(productsTable.id, Number.parseInt(id))),
-    cloudinary.uploader.destroy(img),
-    cloudinary.uploader.destroy(img2),
-    cloudinary.uploader.destroy(img3),
-    cloudinary.uploader.destroy(img4),
-  ])
-  revalidatePath("/")
+    // 2) Si la transacción fue exitosa, eliminar imágenes de Cloudinary (condicionalmente)
+    const cloudinaryDeletes: Array<Promise<any>> = []
+    if (img) cloudinaryDeletes.push(cloudinary.uploader.destroy(img))
+    if (img2) cloudinaryDeletes.push(cloudinary.uploader.destroy(img2))
+    if (img3) cloudinaryDeletes.push(cloudinary.uploader.destroy(img3))
+    if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img4))
+    if (cloudinaryDeletes.length) {
+      await Promise.all(cloudinaryDeletes)
+    }
+
+    // 3) Revalidar
+    revalidatePath("/")
+  } catch (error) {
+    console.error("❌ Error eliminando producto:", error)
+    throw error
+  }
 }
 
 export const editProduct = async (formData: FormData) => {
