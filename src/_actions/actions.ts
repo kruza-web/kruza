@@ -83,8 +83,14 @@ export const createProduct = async (formData: FormData) => {
   const file2 = formData.get("img2") as File | null
   const file3 = formData.get("img3") as File | null
   const file4 = formData.get("img4") as File | null
+  const file5 = formData.get("img5") as File | null
+  const file6 = formData.get("img6") as File | null
+  const file7 = formData.get("img7") as File | null
+  const file8 = formData.get("img8") as File | null
+  const file9 = formData.get("img9") as File | null
+  const file10 = formData.get("img10") as File | null
 
-  const entries = Array.from(formData.entries()).filter(([key]) => !["img", "img2", "img3", "img4"].includes(key))
+  const entries = Array.from(formData.entries()).filter(([key]) => !["img", "img2", "img3", "img4", "img5", "img6", "img7", "img8", "img9", "img10"].includes(key))
   const parsed = productSchema.parse(Object.fromEntries(entries))
 
   const { price, discount, size, isRecommended, ...rest } = parsed
@@ -94,6 +100,12 @@ export const createProduct = async (formData: FormData) => {
   let publicId2 = ""
   let publicId3 = ""
   let publicId4 = ""
+  let publicId5 = ""
+  let publicId6 = ""
+  let publicId7 = ""
+  let publicId8 = ""
+  let publicId9 = ""
+  let publicId10 = ""
 
   if (file instanceof File && file.size > 0) {
     const { signature, timestamp } = getSignature()
@@ -119,12 +131,54 @@ export const createProduct = async (formData: FormData) => {
     publicId4 = data.public_id
   }
 
+  if (file5 instanceof File && file5.size > 0) {
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file5, signature, timestamp })
+    publicId5 = data.public_id
+  }
+
+  if (file6 instanceof File && file6.size > 0) {
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file6, signature, timestamp })
+    publicId6 = data.public_id
+  }
+
+  if (file7 instanceof File && file7.size > 0) {
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file7, signature, timestamp })
+    publicId7 = data.public_id
+  }
+
+  if (file8 instanceof File && file8.size > 0) {
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file8, signature, timestamp })
+    publicId8 = data.public_id
+  }
+
+  if (file9 instanceof File && file9.size > 0) {
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file9, signature, timestamp })
+    publicId9 = data.public_id
+  }
+
+  if (file10 instanceof File && file10.size > 0) {
+    const { signature, timestamp } = getSignature()
+    const data = await uploadFile({ file: file10, signature, timestamp })
+    publicId10 = data.public_id
+  }
+
   await db.insert(productsTable).values({
     ...rest,
     img: publicId,
     img2: publicId2,
     img3: publicId3,
     img4: publicId4,
+    img5: publicId5,
+    img6: publicId6,
+    img7: publicId7,
+    img8: publicId8,
+    img9: publicId9,
+    img10: publicId10,
     isRecommended: Boolean(isRecommended),
     size: sizes.join(", "),
     price: Number(price),
@@ -134,13 +188,19 @@ export const createProduct = async (formData: FormData) => {
 }
 
 export const deleteProduct = async (formData: FormData) => {
-  const { id, img, img2, img3, img4 } = z
+  const { id, img, img2, img3, img4, img5, img6, img7, img8, img9, img10 } = z
     .object({
       id: z.string(),
       img: z.string(),
       img2: z.string(),
       img3: z.string(),
       img4: z.string(),
+      img5: z.string(),
+      img6: z.string(),
+      img7: z.string(),
+      img8: z.string(),
+      img9: z.string(),
+      img10: z.string(),
     })
     .parse(Object.fromEntries(formData))
 
@@ -163,6 +223,12 @@ export const deleteProduct = async (formData: FormData) => {
     if (img2) cloudinaryDeletes.push(cloudinary.uploader.destroy(img2))
     if (img3) cloudinaryDeletes.push(cloudinary.uploader.destroy(img3))
     if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img4))
+      if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img5))
+        if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img6))
+          if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img7))
+            if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img8))
+              if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img9))
+                if (img4) cloudinaryDeletes.push(cloudinary.uploader.destroy(img10))
     if (cloudinaryDeletes.length) {
       await Promise.all(cloudinaryDeletes)
     }
@@ -180,14 +246,26 @@ export const editProduct = async (formData: FormData) => {
   const file2 = formData.get("img2") as File | null
   const file3 = formData.get("img3") as File | null
   const file4 = formData.get("img4") as File | null
+  const file5 = formData.get("img5") as File | null
+  const file6 = formData.get("img6") as File | null
+  const file7 = formData.get("img7") as File | null
+  const file8 = formData.get("img8") as File | null
+  const file9 = formData.get("img9") as File | null
+  const file10 = formData.get("img10") as File | null
 
   const origPublicId = formData.get("publicId") as string
   const origPublicId2 = formData.get("publicId2") as string
   const origPublicId3 = formData.get("publicId3") as string
   const origPublicId4 = formData.get("publicId4") as string
+  const origPublicId5 = formData.get("publicId5") as string
+  const origPublicId6 = formData.get("publicId6") as string
+  const origPublicId7 = formData.get("publicId7") as string
+  const origPublicId8 = formData.get("publicId8") as string
+  const origPublicId9 = formData.get("publicId9") as string
+  const origPublicId10 = formData.get("publicId10") as string
 
   const entries = Array.from(formData.entries()).filter(
-    ([key]) => !["img", "img2", "img3", "img4", "publicId", "publicId2", "publicId3", "publicId4"].includes(key),
+    ([key]) => !["img", "img2", "img3", "img4", "img5", "img6", "img7", "img8", "img9", "img10", "publicId", "publicId2", "publicId3", "publicId4", "publicId5", "publicId6", "publicId7", "publicId8", "publicId9", "publicId10"].includes(key),
   )
   const parsed = editProductSchema.parse(Object.fromEntries(entries))
 
@@ -199,6 +277,12 @@ export const editProduct = async (formData: FormData) => {
   let newPublicId2 = origPublicId2
   let newPublicId3 = origPublicId3
   let newPublicId4 = origPublicId4
+  let newPublicId5 = origPublicId5
+  let newPublicId6 = origPublicId6
+  let newPublicId7 = origPublicId7
+  let newPublicId8 = origPublicId8
+  let newPublicId9 = origPublicId9
+  let newPublicId10 = origPublicId10
 
   if (file instanceof File && file.size > 0 && origPublicId) {
     cloudinary.uploader.destroy(origPublicId)
@@ -240,6 +324,72 @@ export const editProduct = async (formData: FormData) => {
     newPublicId4 = public_id
   }
 
+  if (file5 instanceof File && file5.size > 0 && origPublicId5) {
+    cloudinary.uploader.destroy(origPublicId5)
+    const { signature, timestamp } = getSignature()
+    const { public_id } = await uploadFile({
+      file: file5,
+      signature,
+      timestamp,
+    })
+    newPublicId5 = public_id
+  }
+
+  if (file6 instanceof File && file6.size > 0 && origPublicId6) {
+    cloudinary.uploader.destroy(origPublicId6)
+    const { signature, timestamp } = getSignature()
+    const { public_id } = await uploadFile({
+      file: file6,
+      signature,
+      timestamp,
+    })
+    newPublicId6 = public_id
+  }
+
+  if (file7 instanceof File && file7.size > 0 && origPublicId7) {
+    cloudinary.uploader.destroy(origPublicId7)
+    const { signature, timestamp } = getSignature()
+    const { public_id } = await uploadFile({
+      file: file7,
+      signature,
+      timestamp,
+    })
+    newPublicId7 = public_id
+  }
+
+  if (file8 instanceof File && file8.size > 0 && origPublicId8) {
+    cloudinary.uploader.destroy(origPublicId8)
+    const { signature, timestamp } = getSignature()
+    const { public_id } = await uploadFile({
+      file: file8,
+      signature,
+      timestamp,
+    })
+    newPublicId8 = public_id
+  }
+
+  if (file9 instanceof File && file9.size > 0 && origPublicId9) {
+    cloudinary.uploader.destroy(origPublicId9)
+    const { signature, timestamp } = getSignature()
+    const { public_id } = await uploadFile({
+      file: file9,
+      signature,
+      timestamp,
+    })
+    newPublicId9 = public_id
+  }
+
+  if (file10 instanceof File && file10.size > 0 && origPublicId10) {
+    cloudinary.uploader.destroy(origPublicId10)
+    const { signature, timestamp } = getSignature()
+    const { public_id } = await uploadFile({
+      file: file10,
+      signature,
+      timestamp,
+    })
+    newPublicId10 = public_id
+  }
+
   await db
     .update(productsTable)
     .set({
@@ -251,6 +401,12 @@ export const editProduct = async (formData: FormData) => {
       img2: newPublicId2,
       img3: newPublicId3,
       img4: newPublicId4,
+      img5: newPublicId5,
+      img6: newPublicId6,
+      img7: newPublicId7,
+      img8: newPublicId8,
+      img9: newPublicId9,
+      img10: newPublicId10,
       price: Number(price),
       discount: discount ? Number(discount) : 0, // Manejar el campo de descuento
       size: sizes.join(", "),
@@ -469,53 +625,3 @@ export const getUserOrders = async (userId: number) => {
     where: eq(usersToProducts.userId, userId),
   })
 }
-
-// Función de diagnóstico para verificar la estructura de la base de datos
-export const diagnoseDatabase = async () => {
-  try {
-    console.log("=== DIAGNÓSTICO DE BASE DE DATOS ===");
-    
-    // Verificar usuarios
-    const users = await db.select().from(usersTable).limit(5);
-    console.log("Usuarios en la base de datos:", users.length);
-    
-    // Verificar productos
-    const products = await db.select().from(productsTable).limit(5);
-    console.log("Productos en la base de datos:", products.length);
-    
-    // Verificar órdenes
-    const orders = await db.select().from(usersToProducts).limit(5);
-    console.log("Órdenes en la base de datos:", orders.length);
-    
-    // Verificar variantes
-    const variants = await db.select().from(productVariantsTable).limit(5);
-    console.log("Variantes en la base de datos:", variants.length);
-    
-    // Verificar relaciones
-    if (orders.length > 0) {
-      const orderWithRelations = await db.query.usersToProducts.findFirst({
-        with: {
-          user: true,
-          product: true,
-          variant: true,
-        },
-      });
-      
-      console.log("Orden con relaciones:", {
-        hasUser: !!orderWithRelations?.user,
-        hasProduct: !!orderWithRelations?.product,
-        hasVariant: !!orderWithRelations?.variant,
-      });
-    }
-    
-    return {
-      users: users.length,
-      products: products.length,
-      orders: orders.length,
-      variants: variants.length,
-    };
-  } catch (error) {
-    console.error("❌ Error en diagnóstico:", error);
-    throw error;
-  }
-};

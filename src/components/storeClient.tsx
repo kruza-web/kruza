@@ -25,7 +25,7 @@ type Product = {
 }
 
 // Lista fija de todos los talles posibles
-const ALL_SIZES = ["XS", "S", "M", "L", "XL"]
+const ALL_SIZES = ["S", "M", "L", "Único"]
 
 interface StoreClientProps {
   initialProducts: Product[]
