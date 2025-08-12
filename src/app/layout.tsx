@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Playfair_Display, Anonymous_Pro } from "next/font/google";
+import { Geist_Mono, Roboto, Anonymous_Pro } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-});
 
-const anonymousPro = Anonymous_Pro({
-  variable: "--font-anonymous-pro",
+const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["400", "700"],
-});
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-roboto",
+  display: "swap",
+})
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -32,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${anonymousPro.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased w-full `}
+        className={`${roboto.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased w-full `}
       >
         <Providers>
           {children}

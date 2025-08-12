@@ -86,6 +86,15 @@ export const MobileDrawer = ({ products }: MobileDrawerProps) => {
                     Bottoms
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/store?category=vestidos"
+                    onClick={() => setOpen(false)}
+                    className="block py-2 px-3 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    Vestidos
+                  </Link>
+                </li>
               </ul>
             </div>
 

@@ -35,6 +35,11 @@ export function CategoryMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          <Link href="/store?category=vestidos" className="w-full cursor-pointer">
+            Vestidos
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link href="/store" className="w-full cursor-pointer">
             Todas las categorías
           </Link>

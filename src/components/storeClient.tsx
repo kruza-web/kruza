@@ -61,8 +61,17 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
     }
 
     // Apply category filter
-    if (categoryFilter !== "all") {
-      result = result.filter((product) => product.category === categoryFilter)
+        if (categoryFilter !== "all") {
+      if (categoryFilter === "vestidos") {
+        // Solo mostrar vestidos cuando se selecciona vestidos
+        result = result.filter((product) => product.category === "vestidos")
+      } else if (categoryFilter === "top" || categoryFilter === "bottom") {
+        // Mostrar la categoría seleccionada + vestidos
+        result = result.filter((product) => product.category === categoryFilter || product.category === "vestidos")
+      } else {
+        // Para cualquier otra categoría, filtrar normalmente
+        result = result.filter((product) => product.category === categoryFilter)
+      }
     }
 
     // Apply price sorting - consider discounted prices
@@ -148,6 +157,7 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
                 <SelectItem value="all">Todas las categorías</SelectItem>
                 <SelectItem value="top">Top</SelectItem>
                 <SelectItem value="bottom">Bottom</SelectItem>
+                <SelectItem value="vestidos">Vestidos</SelectItem>
               </SelectContent>
             </Select>
           </div>

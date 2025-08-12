@@ -35,12 +35,12 @@ export default async function RootLayout({
       <main className="flex-grow overflow-x-hidden">{children}</main>
       <footer className="bg-black/5">
         <div className="container mx-auto px-6 py-8">
-           <div className="space-y-4 text-center justify-center mb-8 lg:mb-8">
-              <Link href="/" className="text-3xl font-medium font-serif tracking-wider">
-                KRUZA
-              </Link>
-              
-            </div>
+          <div className="space-y-4 text-center justify-center mb-8 lg:mb-8">
+            <Link href="/" className="text-3xl font-medium font-serif tracking-wider">
+              KRUZA
+            </Link>
+
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
 
 
@@ -71,7 +71,7 @@ export default async function RootLayout({
                   <span>Contactar por WhatsApp</span>
                 </a>
                 <p>somoskruza@gmail.com</p>
-                
+
               </div>
             </div>
 
@@ -79,23 +79,19 @@ export default async function RootLayout({
               <h4 className="font-semibold uppercase ">REDES</h4>
               <div className="space-y-2 text-sm"></div>
               <div className="flex items-center justify-center gap-4 pt-2">
-                  <a href="#" aria-label="Instagram" className=" hover:text-gray-500 transition-colors">
-                    <Instagram className="h-6 w-6" />
-                  </a>
-                  <a href="#" aria-label="Facebook" className=" hover:text-gray-500 transition-colors">
-                    <Facebook className="h-6 w-6" />
-                  </a>
-                  <a href="#" aria-label="Twitter" className=" hover:text-gray-500 transition-colors">
-                    <Twitter className="h-6 w-6" />
-                  </a>
-                </div>
-                
+                <a href="#" aria-label="Instagram" className=" hover:text-gray-500 transition-colors">
+                  <Instagram className="h-6 w-6" />
+                </a>
+                <a href="#" aria-label="Facebook" className=" hover:text-gray-500 transition-colors">
+                  <Facebook className="h-6 w-6" />
+                </a>
+                <a href="#" aria-label="Twitter" className=" hover:text-gray-500 transition-colors">
+                  <Twitter className="h-6 w-6" />
+                </a>
+              </div>
             </div>
-
           </div>
-          
         </div>
-        
       </footer>
     </>
   );

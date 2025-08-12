@@ -53,6 +53,9 @@ export const CreateProduct = () => {
               <SelectItem value="bottom" id="bottom">
                 Bottom
               </SelectItem>
+              <SelectItem value="vestidos" id="vestidos">
+                Vestidos
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>

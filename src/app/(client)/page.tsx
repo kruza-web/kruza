@@ -1,8 +1,5 @@
 import { getProducts } from "@/_actions/actions"
 import { getAllProductsStockStatus } from "@/_actions/stock-actions"
-import { ProductCard } from "@/components/product-card"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { ProductCarousel } from "@/components/products-carrousel"
 import { PromoBanner } from "@/components/promo-banner"
 import { CategoryShowcase } from "@/components/category-showcase"
@@ -37,16 +34,6 @@ export default async function Home() {
         {/* LADO IZQUIERDO */}
         <div className="relative w-full md:w-1/2 h-[90vh] md:h-screen overflow-hidden bg-gray-100">
           <img src="/pic1.jpg" alt="Fashion model" className="w-full h-full object-cover" />
-          {/* Overlay con texto */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-white/50 px-8 py-4 transform -rotate-2">
-              <h2 className="text-black text-2xl md:text-4xl font-bold text-center">
-                ESTAS LISTA PARA
-                <br />
-                <span className="text-3xl md:text-5xl">KRUZA?</span>
-              </h2>
-            </div>
-          </div>
         </div>
 
                 {/* LADO DERECHO - 50% */}
@@ -59,20 +46,6 @@ export default async function Home() {
           />
           <div className="absolute inset-0 bg-black opacity-20"></div>
 
-          {/* Contenido */}
-          <div className="relative z-10 text-center text-white px-8">
-            <p className="text-sm md:text-base font-medium mb-4 tracking-wider">[ NEW ITEMS ON SALE ]</p>
-            <h1 className="text-6xl md:text-8xl font-bold mb-2">HASTA</h1>
-            <h1 className="text-6xl md:text-8xl font-bold mb-8">50%OFF</h1>
-            <Link href="/store">
-              <Button
-                variant="outline"
-                className="bg-transparent border-white text-white hover:bg-white hover:text-red-600 px-8 py-3 text-lg font-medium"
-              >
-                COMPRAR AHORA
-              </Button>
-            </Link>
-          </div>
         </div>
       </div>
 

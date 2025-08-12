@@ -26,7 +26,7 @@ export const productsTable = sqliteTable("products", {
   id: integer("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  category: text("category", { enum: ["top", "bottom"] }).notNull(),
+  category: text("category", { enum: ["top", "bottom", "vestidos"] }).notNull(),
   img: text("img").notNull(),
   img2: text("img2").notNull(),
   img3: text("img3").notNull(),
@@ -161,7 +161,7 @@ export const productSchema = z.object({
   img10: z.instanceof(File).optional(),
   discount: z.string().optional(),
   isRecommended: z.string().optional(),
-  category: z.enum(["top", "bottom"]),
+  category: z.enum(["top", "bottom", "vestidos"]),
 })
 
 export const editProductSchema = z.object({
@@ -192,7 +192,7 @@ export const editProductSchema = z.object({
   discount: z.string().optional(),
   id: z.string(),
   isRecommended: z.string().optional(),
-  category: z.enum(["top", "bottom"]),
+  category: z.enum(["top", "bottom", "vestidos"]),
 })
 
 // Nuevos esquemas para colores y variantes
