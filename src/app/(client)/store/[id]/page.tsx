@@ -29,9 +29,9 @@ export default async function Store({ params }: StoreProps) {
     </section>
 
     {/* Sección Productos Relacionados */}
-    <section className="w-full m-4">
-      <div className="h-20">
-        <h2 className="text-2xl ml-2 font-bold">Descubrí más productos</h2>
+    <section className="w-full">
+      <div>
+        <h2 className="text-2xl ml-4 md:ml-6 font-bold mb-4">Descubrí más productos</h2>
       </div>
       <CarrouselProducts />
     </section>

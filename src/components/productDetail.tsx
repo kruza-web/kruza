@@ -13,6 +13,9 @@ import type { SelectProduct, SelectColor, SelectProductVariant } from "@/db/sche
 import { currency } from "@/lib/utils"
 import { CldImage } from "next-cloudinary"
 import { useSession } from "next-auth/react"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+import { CarouselNext } from "@/components/ui/carousel"
+import { CarouselPrevious } from "@/components/ui/carousel"
 
 interface ProductDetailProps {
   product: SelectProduct
@@ -234,52 +237,31 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               className="aspect-square object-cover border border-gray-200 w-full rounded-lg overflow-hidden dark:border-gray-800"
             />
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 px-2">
-            {/* Flecha izquierda */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={scrollThumbnailsUp}
-              disabled={!canScrollUp}
-              className="h-8 w-8 p-0 flex-shrink-0"
-            >
-              <ChevronUp className="h-4 w-4 rotate-[-90deg]" />
-            </Button>
-
-            {/* Thumbnails visibles en mobile */}
-            <div className="flex gap-2 overflow-hidden">
-              {visibleThumbnails.map((image, index) => (
-                <button
-                  key={thumbnailStartIndex + index}
-                  className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50 flex-shrink-0"
-                  onClick={() => changeMainImage(image.src)}
-                >
-                  <CldImage
-                    src={image.src}
-                    alt={image.alt}
-                    width={60}
-                    height={60}
-                    className={`aspect-square object-cover w-15 h-15 ${
-                      currentImage === image.src ? "border-2 border-gray-900" : ""
+        <div className="md:hidden">
+          <Carousel className="w-full">
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {thumbnailImages.map((image, index) => (
+                <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/4">
+                  <button
+                    className={`border-2 rounded-lg overflow-hidden transition-colors w-full ${
+                      currentImage === image.src ? "border-gray-900" : "border-gray-200 hover:border-gray-400"
                     }`}
-                  />
-                  <span className="sr-only">View {image.alt}</span>
-                </button>
+                    onClick={() => changeMainImage(image.src)}
+                  >
+                    <CldImage
+                      src={image.src}
+                      alt={image.alt}
+                      width={80}
+                      height={80}
+                      className="aspect-square object-cover w-full h-full"
+                    />
+                  </button>
+                </CarouselItem>
               ))}
-            </div>
-
-            {/* Flecha derecha */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={scrollThumbnailsDown}
-              disabled={!canScrollDown}
-              className="h-8 w-8 p-0 flex-shrink-0"
-            >
-              <ChevronDown className="h-4 w-4 rotate-270" />
-            </Button>
-          </div>
+            </CarouselContent>
+          </Carousel>
         </div>
       </div>
 
