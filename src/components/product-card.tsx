@@ -27,13 +27,13 @@ export function ProductCard({ products }: { products: Product }) {
   const discountedPrice = discount > 0 ? price - (price * discount) / 100 : price
 
   return (
-    <div className="flex flex-col items-center w-[350px]">
+    <div className="flex flex-col items-center w-full p-2">
       <div
-        className="relative w-full h-[500px] overflow-hidden rounded-t-lg cursor-pointer group"
+        className="relative w-full aspect-[3/4] overflow-hidden rounded-t-lg cursor-pointer group"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {discount > 0 && !soldOut && <Badge className="absolute top-2 right-2 z-10 bg-red-500">{discount}% OFF</Badge>}
+        {discount > 0 && !soldOut && <Badge className="absolute top-2 right-2 z-10 ">{discount}% OFF</Badge>}
 
         <CldImage
           src={hovered && img2 ? img2 : img}
@@ -49,12 +49,12 @@ export function ProductCard({ products }: { products: Product }) {
           </div>
         )}
       </div>
-      <h2 className="pt-4 text-md text-gray-500 text-center w-full">{title}</h2>
-      <div className="pt-2 text-center w-full">
+      <h2 className="pt-4 px-2 text-md text-gray-500 text-center w-full">{title}</h2>
+      <div className="pt-2 px-2 text-center w-full">
         {discount > 0 && !soldOut ? (
-          <div className="flex flex-col items-center">
+          <div className="flex items-center justify-center gap-2">
             <p className="text-sm text-gray-400 line-through">{currency.format(price)}</p>
-            <p className="text-sm text-red-500 font-semibold">{currency.format(discountedPrice)}</p>
+            <p className="text-sm text-black font-semibold">{currency.format(discountedPrice)}</p>
           </div>
         ) : (
           <p className="text-sm text-gray-500">{currency.format(price)}</p>

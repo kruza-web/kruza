@@ -36,9 +36,10 @@ export const Product = ({
       </div>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-        <p>{currency.format(price)}</p>
-        <p className="text-sm ">{size}</p>
+        <CardDescription>Descripción: {description}</CardDescription>
+        <p>Precio: {currency.format(price)}</p>
+        <p>Descuento: {discount}%</p>
+        <p className="text-sm ">Talles: {size}</p>
       </CardHeader>
       <CardContent>
         {isRecommended ? <div className="mb-2">Recomendado </div> : <div className="mb-2">No Recomendado </div>}

@@ -6,13 +6,13 @@ export default async function Page() {
 
     return (
         <>
-        <div className="flex flex-col items-center p-4">
+        <div className="flex flex-col items-center mt-20 p-4">
         <h1 className="text-2xl font-bold">Usuarios</h1>
         <p className="mt-4 text-lg">Administra tus usuarios acá.</p>
         </div>
 
         <div>
-            <div className="container mx-auto py-10">
+            <div className="container px-10 mx-auto py-10">
             <UsersTable data={data} />
             </div>
         </div>

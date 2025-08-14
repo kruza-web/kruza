@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { ArrowDownAZ, ArrowUpAZ } from 'lucide-react'
+import { ArrowDownAZ, ArrowUpAZ } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 
 // Define the product type based on your data structure
@@ -39,7 +39,7 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
   const [categoryFilter, setCategoryFilter] = useState<string>(initialCategory || "all")
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null)
 
-    const searchParams = useSearchParams()
+  const searchParams = useSearchParams()
 
   // Escuchar cambios en los parámetros de URL
   useEffect(() => {
@@ -61,16 +61,12 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
     }
 
     // Apply category filter
-        if (categoryFilter !== "all") {
+    if (categoryFilter !== "all") {
       if (categoryFilter === "vestidos") {
-        // Solo mostrar vestidos cuando se selecciona vestidos
         result = result.filter((product) => product.category === "vestidos")
-      } else if (categoryFilter === "top" || categoryFilter === "bottom") {
-        // Mostrar la categoría seleccionada + vestidos
-        result = result.filter((product) => product.category === categoryFilter || product.category === "vestidos")
       } else {
-        // Para cualquier otra categoría, filtrar normalmente
-        result = result.filter((product) => product.category === categoryFilter)
+        // For "top" and "bottom", also include "vestidos"
+        result = result.filter((product) => product.category === categoryFilter || product.category === "vestidos")
       }
     }
 
@@ -109,7 +105,7 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
   }
 
   return (
-    <div className="container mx-auto mt-38 px-12 py-8">
+    <div className="container mx-auto mt-38 px-4 sm:px-6 lg:px-8 py-8">
       {/* Filters section */}
       <div className="flex flex-col md:flex-row gap-4 mb-8 justify-between">
         {/* Size filter checkboxes */}
@@ -163,7 +159,11 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
           </div>
 
           {/* Price sort button */}
-          <Button variant="outline" onClick={togglePriceSort} className="flex items-center gap-2 w-full md:w-auto">
+          <Button
+            variant="outline"
+            onClick={togglePriceSort}
+            className="flex items-center gap-2 w-full md:w-auto bg-transparent"
+          >
             Precio
             {priceSort === "asc" ? (
               <ArrowUpAZ className="h-4 w-4" />
@@ -182,7 +182,7 @@ export function StoreClient({ initialProducts, initialCategory }: StoreClientPro
           <p className="text-lg text-muted-foreground">No se encontraron productos con los filtros seleccionados.</p>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 lg:gap-8">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
           {filteredProducts.map((product) => (
             <Link key={product.id} href={`/store/${product.id}`}>
               <li>

@@ -55,14 +55,14 @@ export function ClientHeader({ user, email, products, session, sessionName, sess
           <div className="flex items-center gap-4">
             <MobileDrawer products={products} />
             {/* Logo for Tablet */}
-            <Link href="/" className="hidden md:block text-xl font-medium font-playfair tracking-wider">
+            <Link href="/" className="hidden md:block text-xl font-medium font-serif tracking-wider">
               KRUZA
             </Link>
           </div>
 
           {/* Center - Brand (Mobile only) */}
           <div className="absolute left-1/2 transform -translate-x-1/2 md:hidden">
-            <Link href="/" className="text-xl font-medium font-playfair tracking-wider">
+            <Link href="/" className="text-xl font-medium font-serif tracking-wider">
               KRUZA
             </Link>
           </div>

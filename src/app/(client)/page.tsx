@@ -4,6 +4,7 @@ import { ProductCarousel } from "@/components/products-carrousel"
 import { PromoBanner } from "@/components/promo-banner"
 import { CategoryShowcase } from "@/components/category-showcase"
 import { InfoBanner } from "@/components/info-banner"
+import Image from "next/image"
 
 export default async function Home() {
   const products = await getProducts()
@@ -29,36 +30,43 @@ export default async function Home() {
 
   return (
     <>
-      {/* HERO SECTION - SPLIT SCREEN */}
-      <div className="w-full flex flex-col md:flex-row">
-        {/* LADO IZQUIERDO */}
-        <div className="relative w-full md:w-1/2 h-[90vh] md:h-screen overflow-hidden bg-gray-100">
-          <img src="/pic1.jpg" alt="Fashion model" className="w-full h-full object-cover" />
+      <div className="min-h-screen">
+        {/* Mobile Layout - Split screen */}
+        <div className="w-full flex flex-col">
+          {/* LADO IZQUIERDO */}
+          <div className="relative w-full h-[90vh] md:hidden overflow-hidden bg-gray-100">
+            <img src="/pic1.jpg" alt="Fashion model" className="w-full h-full object-cover" />
+          </div>
+
+          {/* LADO DERECHO - 50% */}
+          <div className="relative w-full h-[90vh] md:hidden flex items-center justify-center">
+            {/* Imagen de fondo */}
+            <img
+              src="/pic3.jpg"
+              alt="Background"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black opacity-20"></div>
+
+          </div>
         </div>
 
-                {/* LADO DERECHO - 50% */}
-        <div className="relative w-full md:w-1/2 h-[90vh] md:h-screen flex items-center justify-center">
-          {/* Imagen de fondo */}
-          <img
-            src="/pic3.jpg"
-            alt="Background"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black opacity-20"></div>
-
+        {/* Tablet & Desktop Layout - Full screen banner */}
+        <div className="hidden md:block relative w-full h-screen overflow-hidden">
+          <Image src="/pic2.jpg" alt="Fashion banner" width={2400} height={2400} className="w-full h-full object-cover" />
         </div>
+
+        <ProductCarousel products={productsWithSoldOutFlag} />
+
+        {/* PROMO BANNER */}
+        <PromoBanner />
+
+        {/* CATEGORY SHOWCASE */}
+        <CategoryShowcase />
+
+        {/* INFO BANNER */}
+        <InfoBanner />
       </div>
-
-      <ProductCarousel products={productsWithSoldOutFlag} />
-
-      {/* PROMO BANNER */}
-      <PromoBanner />
-
-      {/* CATEGORY SHOWCASE */}
-      <CategoryShowcase />
-
-      {/* INFO BANNER */}
-      <InfoBanner />
     </>
   )
 }

@@ -31,15 +31,13 @@ async function AdminLayout({
 
   return (
     <>
-      <header className="sticky top-0 z-50">
+      <header className="fixed w-full top-0 z-50 bg-background ">
         <div className="flex items-center gap-10 justify-end border-b py-4 md:justify-between mx-4">
           <h1>
             <Link href={"/admin"}>K3Y</Link>
           </h1>
-
           <Nav/>
           <div className="flex items-center space-x-3">
-            <ModeToggle />
             <MobileDrawer />
           </div>
         </div>

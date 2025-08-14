@@ -6,7 +6,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { useCart } from "../providers/cart-provider"
-import { AlertCircle, CheckCircle, ShoppingCart } from "lucide-react"
+import { AlertCircle, ShoppingCart, ChevronUp, ChevronDown } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { SizeChartModal } from "@/components/size-chart-modal"
 import type { SelectProduct, SelectColor, SelectProductVariant } from "@/db/schema"
@@ -29,6 +29,7 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
   const [stockStatus, setStockStatus] = useState<"available" | "low" | "out">("out")
   const [quantity, setQuantity] = useState(1)
   const [currentImage, setCurrentImage] = useState<string>(product.img)
+  const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0)
   const { data: session, status } = useSession()
   const isAuthenticated = status === "authenticated"
 
@@ -111,71 +112,92 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
     }
   }
 
-  const getStockMessage = () => {
-    switch (stockStatus) {
-      case "available":
-        return (
-          <div className="flex items-center text-green-600">
-            <CheckCircle className="w-4 h-4 mr-1" />
-            <span>En stock ({currentStock} disponibles)</span>
-          </div>
-        )
-      case "low":
-        return (
-          <div className="flex items-center text-amber-600">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            <span>¡Últimas unidades! ({currentStock} disponibles)</span>
-          </div>
-        )
-      case "out":
-        return (
-          <div className="flex items-center text-red-600">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            <span>Agotado</span>
-          </div>
-        )
-    }
-  }
-
   // Función para cambiar la imagen principal
   const changeMainImage = (imageUrl: string) => {
     setCurrentImage(imageUrl)
   }
 
-  // Crear array de imágenes para los thumbnails
   const thumbnailImages = [
     { src: product.img, alt: "Image 1" },
     { src: product.img2, alt: "Image 2" },
     ...(product.img3 ? [{ src: product.img3, alt: "Image 3" }] : []),
     ...(product.img4 ? [{ src: product.img4, alt: "Image 4" }] : []),
-  ]
+    ...(product.img5 ? [{ src: product.img5, alt: "Image 5" }] : []),
+    ...(product.img6 ? [{ src: product.img6, alt: "Image 6" }] : []),
+    ...(product.img7 ? [{ src: product.img7, alt: "Image 7" }] : []),
+    ...(product.img8 ? [{ src: product.img8, alt: "Image 8" }] : []),
+    ...(product.img9 ? [{ src: product.img9, alt: "Image 9" }] : []),
+    ...(product.img10 ? [{ src: product.img10, alt: "Image 10" }] : []),
+  ].filter((img) => img.src) // Filtrar imágenes que existen
+
+  const maxVisibleThumbnails = 5
+  const canScrollUp = thumbnailStartIndex > 0
+  const canScrollDown = thumbnailStartIndex + maxVisibleThumbnails < thumbnailImages.length
+
+  const scrollThumbnailsUp = () => {
+    if (canScrollUp) {
+      setThumbnailStartIndex((prev) => Math.max(0, prev - 1))
+    }
+  }
+
+  const scrollThumbnailsDown = () => {
+    if (canScrollDown) {
+      setThumbnailStartIndex((prev) => Math.min(thumbnailImages.length - maxVisibleThumbnails, prev + 1))
+    }
+  }
+
+  const visibleThumbnails = thumbnailImages.slice(thumbnailStartIndex, thumbnailStartIndex + maxVisibleThumbnails)
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6 lg:gap-12 items-start max-w-7xl px-4 mx-auto py-6">
+    <div className="grid lg:grid-cols-3 gap-6 items-start max-w-7xl px-4 mx-auto py-6">
       {/* Columna de imágenes - Ahora ocupa 2 columnas en pantallas grandes */}
       <div className="lg:col-span-2 grid gap-3 items-start lg:order-1">
         {/* Layout para desktop: flex con thumbnails a la izquierda */}
-        <div className="hidden lg:flex gap-6">
-          {/* Thumbnails a la izquierda en desktop */}
-          <div className="flex flex-col gap-3 w-20 flex-shrink-0">
-            {thumbnailImages.map((image, index) => (
-              <button
-                key={index}
-                className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
-                onClick={() => changeMainImage(image.src)}
-              >
-                <CldImage
-                  src={image.src}
-                  alt={image.alt}
-                  width={80}
-                  height={80}
-                  className={`aspect-square object-cover ${
-                    currentImage === image.src ? "border-2 " : ""
-                  }`}
-                />
-                <span className="sr-only">View {image.alt}</span>
-              </button>
-            ))}
+        <div className="hidden lg:flex gap-4">
+          <div className="flex flex-col w-20 flex-shrink-0">
+            {/* Flecha hacia arriba */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={scrollThumbnailsUp}
+              disabled={!canScrollUp}
+              className="h-8 w-full mb-2 p-0"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+
+            {/* Thumbnails visibles */}
+            <div className="flex flex-col gap-2">
+              {visibleThumbnails.map((image, index) => (
+                <button
+                  key={thumbnailStartIndex + index}
+                  className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50"
+                  onClick={() => changeMainImage(image.src)}
+                >
+                  <CldImage
+                    src={image.src}
+                    alt={image.alt}
+                    width={80}
+                    height={80}
+                    className={`aspect-square object-cover ${
+                      currentImage === image.src ? "border-2 border-gray-900" : ""
+                    }`}
+                  />
+                  <span className="sr-only">View {image.alt}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Flecha hacia abajo */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={scrollThumbnailsDown}
+              disabled={!canScrollDown}
+              className="h-8 w-full mt-2 p-0"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </Button>
           </div>
 
           {/* Imagen principal en desktop */}
@@ -213,26 +235,50 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
             />
           </div>
 
-          {/* Thumbnails en fila horizontal en mobile */}
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {thumbnailImages.map((image, index) => (
-              <button
-                key={index}
-                className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50 flex-shrink-0"
-                onClick={() => changeMainImage(image.src)}
-              >
-                <CldImage
-                  src={image.src}
-                  alt={image.alt}
-                  width={80}
-                  height={80}
-                  className={`aspect-square object-cover w-20 h-20 ${
-                    currentImage === image.src ? "border-1" : ""
-                  }`}
-                />
-                <span className="sr-only">View {image.alt}</span>
-              </button>
-            ))}
+          <div className="flex items-center gap-2 px-2">
+            {/* Flecha izquierda */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={scrollThumbnailsUp}
+              disabled={!canScrollUp}
+              className="h-8 w-8 p-0 flex-shrink-0"
+            >
+              <ChevronUp className="h-4 w-4 rotate-[-90deg]" />
+            </Button>
+
+            {/* Thumbnails visibles en mobile */}
+            <div className="flex gap-2 overflow-hidden">
+              {visibleThumbnails.map((image, index) => (
+                <button
+                  key={thumbnailStartIndex + index}
+                  className="border hover:border-gray-900 rounded-lg overflow-hidden transition-colors dark:hover:border-gray-50 flex-shrink-0"
+                  onClick={() => changeMainImage(image.src)}
+                >
+                  <CldImage
+                    src={image.src}
+                    alt={image.alt}
+                    width={60}
+                    height={60}
+                    className={`aspect-square object-cover w-15 h-15 ${
+                      currentImage === image.src ? "border-2 border-gray-900" : ""
+                    }`}
+                  />
+                  <span className="sr-only">View {image.alt}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Flecha derecha */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={scrollThumbnailsDown}
+              disabled={!canScrollDown}
+              className="h-8 w-8 p-0 flex-shrink-0"
+            >
+              <ChevronDown className="h-4 w-4 rotate-270" />
+            </Button>
           </div>
         </div>
       </div>
@@ -364,7 +410,6 @@ export const ProductDetail = ({ product, colors, variants }: ProductDetailProps)
               type="button"
               onClick={handleAddToCart}
               disabled={!selectedColor || !selectedSize || currentStock === 0}
-              
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
               {!hasStock ? "Agotado" : "Agregar al carrito"}

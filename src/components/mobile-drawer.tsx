@@ -43,7 +43,7 @@ export const MobileDrawer = ({ products }: MobileDrawerProps) => {
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle className="text-center">KRUZA</DrawerTitle>
+            <DrawerTitle className="text-center font-serif font-medium text-2xl">KRUZA</DrawerTitle>
           </DrawerHeader>
 
           <div className="px-4 space-y-4">

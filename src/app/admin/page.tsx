@@ -17,7 +17,7 @@ export default async function Admin() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-center">Admin</h1>
+      <h1 className="text-2xl font-bold text-center mt-6">Admin</h1>
       <div className="grid grid-cols-1 gap-4 p-4 justify-items-center">
         <p className="text-lg">Administra tu tienda desde aquí.</p>
         <ul className="flex items-center justify-center gap-4">

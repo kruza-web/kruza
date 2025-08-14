@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import type { SelectUser } from "@/db/schema"
 
 export const columns: ColumnDef<SelectUser>[] = [
@@ -123,6 +125,72 @@ export const columns: ColumnDef<SelectUser>[] = [
   },
 ]
 
+function MobileUserCard({ user }: { user: SelectUser }) {
+  const hasCompleteAddress =
+    user.street && user.streetNumber && user.city && user.state && user.postalCode && user.dni && user.phone
+
+  const hasAddress = user.street && user.streetNumber
+
+  return (
+    <Card className="mb-4">
+      <CardContent className="p-4">
+        <div className="space-y-3">
+          {/* Header con nombre y email */}
+          <div className="flex flex-col space-y-1">
+            <h3 className="font-semibold text-lg capitalize">{user.name || "Sin nombre"}</h3>
+            <p className="text-sm text-muted-foreground lowercase">{user.email}</p>
+          </div>
+
+          {/* Estado de delivery */}
+          <div className="flex justify-start">
+            <Badge
+              variant={hasCompleteAddress ? "default" : "destructive"}
+              className={
+                hasCompleteAddress
+                  ? "bg-green-100 text-green-800 hover:bg-green-200"
+                  : "bg-red-100 text-red-800 hover:bg-red-200"
+              }
+            >
+              {hasCompleteAddress ? "✅ Completo" : "❌ Incompleto"}
+            </Badge>
+          </div>
+
+          {/* Información de contacto */}
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="font-medium text-muted-foreground">DNI:</span>
+              <p className="mt-1">{user.dni || "No registrado"}</p>
+            </div>
+            <div>
+              <span className="font-medium text-muted-foreground">Teléfono:</span>
+              <p className="mt-1">{user.phone || "No registrado"}</p>
+            </div>
+          </div>
+
+          {/* Dirección */}
+          <div className="text-sm">
+            <span className="font-medium text-muted-foreground">Dirección:</span>
+            {hasAddress ? (
+              <div className="mt-1 space-y-1">
+                <p className="font-medium">
+                  {user.street} {user.streetNumber}
+                </p>
+                <p className="text-muted-foreground">
+                  {user.city}, {user.state}
+                </p>
+                <p className="text-muted-foreground">CP: {user.postalCode}</p>
+                {user.indications && <p className="text-blue-600">📝 {user.indications}</p>}
+              </div>
+            ) : (
+              <p className="mt-1 text-muted-foreground">Sin dirección registrada</p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function UsersTable({ data }: { data: SelectUser[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -159,7 +227,7 @@ export function UsersTable({ data }: { data: SelectUser[] }) {
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto bg-transparent">
+            <Button variant="outline" className="ml-auto bg-transparent hidden md:flex">
               Columnas <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
@@ -182,7 +250,20 @@ export function UsersTable({ data }: { data: SelectUser[] }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border">
+
+      <div className="md:hidden">
+        {table.getRowModel().rows?.length ? (
+          <div className="space-y-4">
+            {table.getRowModel().rows.map((row) => (
+              <MobileUserCard key={row.id} user={row.original} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">No hay resultados.</div>
+        )}
+      </div>
+
+      <div className="hidden md:block rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -216,6 +297,7 @@ export function UsersTable({ data }: { data: SelectUser[] }) {
           </TableBody>
         </Table>
       </div>
+
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)

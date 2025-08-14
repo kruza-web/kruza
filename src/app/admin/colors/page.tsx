@@ -20,7 +20,7 @@ const Colors = async () => {
 export default function ColorsPage() {
   return (
     <>
-      <div className="flex flex-col items-center p-4">
+      <div className="flex flex-col items-center mt-20 p-4">
         <h1 className="text-2xl font-bold">Colores</h1>
         <p className="mt-4 text-lg">Administra los colores disponibles para tus productos.</p>
       </div>

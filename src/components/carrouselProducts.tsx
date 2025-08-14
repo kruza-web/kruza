@@ -28,37 +28,40 @@ export const CarrouselProducts = async () => {
   })
 
   return (
-    <>
-    <Carousel
-      opts={{
-        align: "start",
-      }}
-      className="mb-6 w-full"
-    >
-      <CarouselContent className="flex space-x-8">
-        {productsWithStockInfo.map((product) => (
-          <CarouselItem key={product.id} className=" basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/4">  
-            <Link href={`/store/${product.id}`} className="block group ">
-              <ProductCard products={product} />
-            </Link>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      {productsWithStockInfo.length > 4 && (
-        <>
-          <CarouselPrevious className="hidden lg:inline-flex" />
-          <CarouselNext className="hidden lg:inline-flex" />
-        </>
-      )}
-    </Carousel>
+    <div className="w-full overflow-hidden px-2 sm:px-4">
+      <Carousel
+        opts={{
+          align: "start",
+        }}
+        className="mb-6 w-full max-w-full"
+      >
+        <CarouselContent className="flex -ml-2 sm:-ml-4">
+          {productsWithStockInfo.map((product) => (
+            <CarouselItem
+              key={product.id}
+              className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/4 pl-2 sm:pl-4"
+            >
+              <Link href={`/store/${product.id}`} className="block group">
+                <ProductCard products={product} />
+              </Link>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        {productsWithStockInfo.length > 4 && (
+          <>
+            <CarouselPrevious className="hidden lg:inline-flex" />
+            <CarouselNext className="hidden lg:inline-flex" />
+          </>
+        )}
+      </Carousel>
 
-    <div className="text-center mt-4">
-          <Link href="/store">
-            <Button variant="outline" className="px-8 py-3 mb-6 text-lg font-medium bg-transparent">
-              Ver Toda la Colección
-            </Button>
-          </Link>
-        </div>
-        </>
+      <div className="text-center mt-4">
+        <Link href="/store">
+          <Button variant="outline" className="px-8 py-3 mb-6 text-lg font-medium bg-transparent">
+            Ver Toda la Colección
+          </Button>
+        </Link>
+      </div>
+    </div>
   )
 }
