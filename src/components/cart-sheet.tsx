@@ -9,9 +9,8 @@ import { CldImage } from "next-cloudinary"
 import { createCheckoutSession } from "@/_actions/mercadopago"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { DeliveryForm } from "@/components/delivery-form"
-import { hasDeliveryInfo } from "@/_actions/user-actions"
 
 interface CartSheetProps {
   open: boolean
@@ -33,69 +32,38 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
     finalTotal,
   } = useCart()
 
-  const [showDeliveryForm, setShowDeliveryForm] = useState(false)
-  const [hasCompleteDeliveryInfo, setHasCompleteDeliveryInfo] = useState(false)
-  const [isCheckingDeliveryInfo, setIsCheckingDeliveryInfo] = useState(false)
+  const [deliveryFormCompleted, setDeliveryFormCompleted] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-
-  // Verificar si el usuario tiene información de delivery completa
-  useEffect(() => {
-    const checkDeliveryInfo = async () => {
-      if (!email || deliveryOption !== "delivery") {
-        setHasCompleteDeliveryInfo(false)
-        return
-      }
-
-      setIsCheckingDeliveryInfo(true)
-      try {
-        const hasInfo = await hasDeliveryInfo(email)
-        setHasCompleteDeliveryInfo(hasInfo)
-        setShowDeliveryForm(!hasInfo)
-      } catch (error) {
-        console.error("Error checking delivery info:", error)
-        setHasCompleteDeliveryInfo(false)
-        setShowDeliveryForm(true)
-      } finally {
-        setIsCheckingDeliveryInfo(false)
-      }
-    }
-
-    checkDeliveryInfo()
-  }, [email, deliveryOption])
 
   const handleDeliveryOptionChange = (value: "delivery" | "pickup") => {
     setDeliveryOption(value)
     if (value === "pickup") {
-      setShowDeliveryForm(false)
-      setHasCompleteDeliveryInfo(false)
+      setDeliveryFormCompleted(false)
+    } else {
+      setDeliveryFormCompleted(false)
     }
   }
 
   const handleDeliveryFormComplete = () => {
-    setShowDeliveryForm(false)
-    setHasCompleteDeliveryInfo(true)
+    setDeliveryFormCompleted(true)
   }
 
   const canProceedToCheckout = () => {
     if (deliveryOption === "pickup") {
       return true
     }
-    return hasCompleteDeliveryInfo && !showDeliveryForm
+    return deliveryFormCompleted
   }
 
   const handleCheckout = async () => {
-    if (!canProceedToCheckout() || isCheckingDeliveryInfo || isProcessing) return
+    if (!canProceedToCheckout() || isProcessing) return
     try {
       setIsProcessing(true)
-      // Vaciar el carrito antes de iniciar el checkout (independientemente del resultado)
       clearCart()
-      // Iniciar checkout de Mercado Pago (esto realizará redirect en el servidor)
       await createCheckoutSession(items, email, deliveryOption, deliveryCost)
     } catch (error) {
       console.error("Error iniciando checkout:", error)
-      // Nota: A pedido tuyo, no restauramos el carrito si falla.
     } finally {
-      // En la práctica, si redirect ocurre, esto no se ejecutará.
       setIsProcessing(false)
     }
   }
@@ -118,9 +86,7 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
           </div>
         ) : (
           <>
-            {/* Contenido scrolleable */}
             <div className="flex-1 overflow-y-auto">
-              {/* Lista de productos */}
               <div className="py-6">
                 <ul className="space-y-5">
                   {items.map((item) => (
@@ -143,7 +109,6 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                 </ul>
               </div>
 
-              {/* Opciones de entrega */}
               <div className="border-t pt-4 pb-4 space-y-4">
                 <div className="space-y-2">
                   <h3 className="font-medium">Opciones de entrega</h3>
@@ -163,28 +128,15 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                   </RadioGroup>
                 </div>
 
-                {/* Estado de información de delivery */}
                 {deliveryOption === "delivery" && (
                   <div className="space-y-2">
-                    {isCheckingDeliveryInfo ? (
-                      <div className="text-sm text-muted-foreground">Verificando información de envío...</div>
-                    ) : hasCompleteDeliveryInfo && !showDeliveryForm ? (
-                      <div className="text-sm text-green-600 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                        Información de envío completa
-                      </div>
-                    ) : null}
+                    <h4 className="font-medium text-sm">Información de envío</h4>
+                    <DeliveryForm email={email} onComplete={handleDeliveryFormComplete} />
                   </div>
-                )}
-
-                {/* Formulario de delivery */}
-                {showDeliveryForm && deliveryOption === "delivery" && (
-                  <DeliveryForm email={email} onComplete={handleDeliveryFormComplete} />
                 )}
               </div>
             </div>
 
-            {/* Footer fijo */}
             <SheetFooter className="flex-col gap-4 sm:gap-4 border-t pt-4">
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
@@ -207,14 +159,11 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                   <Trash2 className="size-4" />
                   Vaciar carrito
                 </Button>
-                <Button
-                  onClick={handleCheckout}
-                  disabled={!canProceedToCheckout() || isCheckingDeliveryInfo || isProcessing}
-                >
+                <Button onClick={handleCheckout} disabled={!canProceedToCheckout() || isProcessing}>
                   {isProcessing
                     ? "Redirigiendo..."
-                    : deliveryOption === "delivery" && !hasCompleteDeliveryInfo
-                      ? "Completar datos"
+                    : deliveryOption === "delivery" && !deliveryFormCompleted
+                      ? "Completar datos de envío"
                       : "Comprar"}
                 </Button>
               </div>

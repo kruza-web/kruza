@@ -35,7 +35,7 @@ export function ProductCarousel({
   subtitle = "Hasta 50% OFF",
 }: ProductCarouselProps) {
   // Filtrar solo productos recomendados y con descuento para el carousel
-  const featuredProducts = products.filter((product) => product.isRecommended && (product.discount || 0) > 0)
+  const featuredProducts = products.filter((product) => product.isRecommended || (product.discount || 0) > 0)
 
   if (featuredProducts.length === 0) {
     return null
