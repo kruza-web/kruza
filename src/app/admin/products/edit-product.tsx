@@ -54,8 +54,8 @@ export const EditProduct = ({
       </DialogTrigger>
       <DialogContent className="w-[98vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader>
-          <DialogTitle>Edit products</DialogTitle>
-          <DialogDescription>Edit your profile here.</DialogDescription>
+          <DialogTitle>Editar Productos</DialogTitle>
+          <DialogDescription>Edita tu producto.</DialogDescription>
         </DialogHeader>
         <form action={handleAction} className="space-y-3">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
