@@ -79,14 +79,8 @@ export default async function RootLayout({
               <h4 className="font-semibold uppercase ">REDES</h4>
               <div className="space-y-2 text-sm"></div>
               <div className="flex items-center justify-center gap-4 pt-2">
-                <a href="#" aria-label="Instagram" className=" hover:text-gray-500 transition-colors">
+                <a href="https://www.instagram.com/kruza____" aria-label="Instagram" className=" hover:text-gray-500 transition-colors">
                   <Instagram className="h-6 w-6" />
-                </a>
-                <a href="#" aria-label="Facebook" className=" hover:text-gray-500 transition-colors">
-                  <Facebook className="h-6 w-6" />
-                </a>
-                <a href="#" aria-label="Twitter" className=" hover:text-gray-500 transition-colors">
-                  <Twitter className="h-6 w-6" />
                 </a>
               </div>
             </div>

@@ -119,7 +119,7 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="pickup" id="pickup" />
-                      <Label htmlFor="pickup">Retiro en depósito (Gratis)</Label>
+                      <Label htmlFor="pickup">Retiro en depósito (Palermo, CABA)</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="delivery" id="delivery" />
