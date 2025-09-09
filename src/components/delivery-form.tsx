@@ -2,12 +2,41 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveDeliveryInfo, getUserDeliveryInfo } from "@/_actions/user-actions"
 import { toast } from "sonner"
+import { useCart } from "@/providers/cart-provider"
+
+const ARGENTINE_PROVINCES = [
+  "CABA",
+  "Buenos Aires",
+  "Catamarca",
+  "Chaco",
+  "Chubut",
+  "Córdoba",
+  "Corrientes",
+  "Entre Ríos",
+  "Formosa",
+  "Jujuy",
+  "La Pampa",
+  "La Rioja",
+  "Mendoza",
+  "Misiones",
+  "Neuquén",
+  "Río Negro",
+  "Salta",
+  "San Juan",
+  "San Luis",
+  "Santa Cruz",
+  "Santa Fe",
+  "Santiago del Estero",
+  "Tierra del Fuego",
+  "Tucumán",
+]
 
 interface DeliveryFormProps {
   email?: string
@@ -15,6 +44,7 @@ interface DeliveryFormProps {
 }
 
 export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
+  const { setSelectedProvince } = useCart()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [formData, setFormData] = useState({
@@ -24,11 +54,12 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
     streetNumber: "",
     postalCode: "",
     city: "",
-    state: "",
+    state: "CABA",
     indications: "",
   })
 
-  // Cargar datos existentes del usuario
+  const stableOnComplete = useCallback(onComplete, [])
+
   useEffect(() => {
     const loadUserData = async () => {
       if (!email) {
@@ -37,9 +68,11 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
       }
 
       try {
+        console.log("[v0] Loading user data for email:", email)
         const userData = await getUserDeliveryInfo(email)
         if (userData) {
-          setFormData({
+          console.log("[v0] User data loaded:", userData)
+          const newFormData = {
             dni: userData.dni?.toString() || "",
             phone: userData.phone || "",
             street: userData.street || "",
@@ -48,11 +81,15 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
             city: userData.city || "",
             state: userData.state || "",
             indications: userData.indications || "",
-          })
+          }
 
-          // Si todos los datos están completos, llamar a onComplete automáticamente
+          setFormData(newFormData)
+
+          if (userData.state) {
+            setSelectedProvince(userData.state)
+          }
+
           const isComplete =
-            userData.dni &&
             userData.phone &&
             userData.street &&
             userData.streetNumber &&
@@ -61,7 +98,7 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
             userData.state
 
           if (isComplete) {
-            onComplete()
+            stableOnComplete()
           }
         }
       } catch (error) {
@@ -72,7 +109,7 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
     }
 
     loadUserData()
-  }, [email, onComplete])
+  }, [email, stableOnComplete, setSelectedProvince])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -80,6 +117,21 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
       ...prev,
       [name]: value,
     }))
+  }
+
+  const handleProvinceChange = (value: string) => {
+    console.log("[v0] Province selected:", value)
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        state: value,
+      }
+      console.log("[v0] Updated form data:", newData)
+      return newData
+    })
+    setTimeout(() => {
+      setSelectedProvince(value)
+    }, 0)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -111,15 +163,8 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
     }
   }
 
-  // Verificar si todos los campos requeridos están completos
   const isFormComplete =
-    formData.dni &&
-    formData.phone &&
-    formData.street &&
-    formData.streetNumber &&
-    formData.postalCode &&
-    formData.city &&
-    formData.state
+    formData.phone && formData.street && formData.streetNumber && formData.postalCode && formData.city && formData.state
 
   if (isLoading) {
     return (
@@ -147,7 +192,6 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
             placeholder="Ingresa tu DNI (sin puntos ni espacios)"
             value={formData.dni}
             onChange={handleInputChange}
-            required
           />
         </div>
 
@@ -216,14 +260,18 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
 
         <div className="grid gap-1.5">
           <Label htmlFor="state">Provincia</Label>
-          <Input
-            id="state"
-            name="state"
-            placeholder="Provincia"
-            value={formData.state}
-            onChange={handleInputChange}
-            required
-          />
+          <Select value={formData.state} onValueChange={handleProvinceChange} name="state" required>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona tu provincia" />
+            </SelectTrigger>
+            <SelectContent>
+              {ARGENTINE_PROVINCES.map((province) => (
+                <SelectItem key={province} value={province}>
+                  {province}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid gap-1.5">

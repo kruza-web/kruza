@@ -17,14 +17,14 @@ export default async function Home({
     const { redirect } = await searchParams;
     return (
         <>
-      <div className="flex flex-col items-center text-center">
-        <h1 className="text-4xl font-serif tracking-tight lg:text-5xl xl:text-6xl">
+      <div className="flex flex-col items-center text-center p-6 mt-32">
+        <h1 className="text-4xl font-sans tracking-tight lg:text-5xl xl:text-6xl">
           Inicio de sesión
         </h1>
-        <p className="mb-8 max-w-2xl scroll-m-20 text-lg font-light text-muted-foreground sm:mb-12 md:mb-16">
+        <p className="mb-10 font-sans max-w-2xl scroll-m-20 text-lg font-light text-muted-foreground md:mb-16">
           Podes loguear con tu cuenta de google
         </p>
-        <Card>
+        <Card className="w-full max-w-md mb-16">
           <CardHeader>
             <CardTitle className="text-2xl">Inicio de sesión</CardTitle>
             <CardDescription>

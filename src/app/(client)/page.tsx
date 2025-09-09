@@ -53,7 +53,7 @@ export default async function Home() {
 
         {/* Tablet & Desktop Layout - Full screen banner */}
         <div className="hidden md:block relative w-full h-screen overflow-hidden">
-          <Image src="/pic2.jpg" alt="Fashion banner" width={2400} height={2400} className="w-full h-full object-cover" />
+          <Image src="/banner-principal.jpg" alt="Fashion banner" width={3400} height={3400} className="w-full h-full object-cover" />
         </div>
 
         <ProductCarousel products={productsWithSoldOutFlag} />

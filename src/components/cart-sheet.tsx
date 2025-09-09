@@ -123,7 +123,12 @@ export function CartSheet({ open, onOpenChange, email }: CartSheetProps) {
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="delivery" id="delivery" />
-                      <Label htmlFor="delivery">Delivery (${currency.format(10000).replace("$", "")})</Label>
+                      <Label htmlFor="delivery">
+                        Delivery{" "}
+                        {deliveryCost > 0
+                          ? `(${currency.format(deliveryCost)})`
+                          : "(Selecciona provincia para ver precio)"}
+                      </Label>
                     </div>
                   </RadioGroup>
                 </div>
