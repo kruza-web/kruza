@@ -76,7 +76,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const deliveryCost = useMemo(() => {
     if (deliveryOption !== "delivery") return 0
-    return PROVINCE_DELIVERY_COSTS[selectedProvince] // fallback to 10000 if province not found
+    if (!selectedProvince || selectedProvince.trim() === "") return 0
+    return PROVINCE_DELIVERY_COSTS[selectedProvince] || 0
   }, [deliveryOption, selectedProvince])
 
   // Calculate final total including delivery cost
