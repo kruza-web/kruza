@@ -77,9 +77,9 @@ export const usersToProducts = sqliteTable("users_to_products", {
   variantId: integer("variant_id").references(() => productVariantsTable.id),
   quantity: integer("quantity").notNull(),
   delivery: integer("delivery", { mode: "boolean" }).default(true).notNull(),
-  status: text("status", { enum: ["pending", "dispatched", "delivered"] })
+  status: text("status", { enum: ["Pendiente", "Enviado", "Entregado"] })
     .notNull()
-    .default("pending"),
+    .default("Pendiente"),
   purchasedAt: text("purchased_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
   // **NUEVO CAMPO PARA EVITAR DUPLICADOS**
   paymentId: text("payment_id"), // ID del pago de Mercado Pago
@@ -142,7 +142,7 @@ export type InsertUserToProduct = typeof usersToProducts.$inferInsert
 export type SelectUserToProduct = typeof usersToProducts.$inferSelect
 
 // Esquemas de validación
-export const statusSchema = z.union([z.literal("pending"), z.literal("dispatched"), z.literal("delivered")])
+export const statusSchema = z.union([z.literal("Pendiente"), z.literal("Enviado"), z.literal("Entregado")])
 
 export const productSchema = z.object({
   title: z.string(),

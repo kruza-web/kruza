@@ -554,7 +554,7 @@ export const buy = async (
         quantity: item.quantity,
         delivery,
         variantId: variant?.variantId || null,
-        status: "pending" as const,
+        status: "Pendiente" as const,
         paymentId: paymentId || null // **INCLUIR PAYMENT ID**
       }
       

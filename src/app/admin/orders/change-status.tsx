@@ -38,11 +38,11 @@ export const ChangeStatus = ({
             changeStatus({ status, id });
           }}
         >
-          <DropdownMenuRadioItem value="pending">Pendiente</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dispatched">
-            Despachado
+          <DropdownMenuRadioItem value="Pendiente">Pendiente</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="Enviado">
+            Enviado
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="delivered">
+          <DropdownMenuRadioItem value="Entregado">
             Entregado
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>

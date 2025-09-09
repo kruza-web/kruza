@@ -34,11 +34,11 @@ const Orders = async ({ id }: { id: number }) => {
                   status,
                 }) => (
                   <TableRow key={id || Math.random()}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium text-center">
                       <Link href={`/store`}>{title || "Producto no disponible"}</Link>
                     </TableCell>
-                    <TableCell>{purchasedAt}</TableCell>
-                    <TableCell>{status}</TableCell>
+                    <TableCell className="text-center">{purchasedAt}</TableCell>
+                    <TableCell className="text-center">{status}</TableCell>
                   </TableRow>
                 ),
               )
