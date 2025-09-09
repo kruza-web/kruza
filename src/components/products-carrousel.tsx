@@ -31,8 +31,7 @@ interface ProductCarouselProps {
 
 export function ProductCarousel({
   products,
-  title = "Colección Invierno",
-  subtitle = "Hasta 50% OFF",
+  title = "Nuestra Colección",
 }: ProductCarouselProps) {
   // Filtrar solo productos recomendados y con descuento para el carousel
   const featuredProducts = products.filter((product) => product.isRecommended || (product.discount || 0) > 0)
@@ -47,7 +46,6 @@ export function ProductCarousel({
         {/* Header */}
         <div className="text-center mb-18">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{title}</h2>
-          <p className="text-lg text-gray-600 font-medium">{subtitle}</p>
         </div>
 
         {/* Carousel */}
@@ -73,11 +71,19 @@ export function ProductCarousel({
                     {/* Product Image */}
                     <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
                       <Link href={`/store/${product.id}`}>
+                        {/* Primera imagen */}
                         <CldImage
                           src={product.img}
                           alt={product.title}
                           fill
-                          className="object-cover"
+                          className="object-cover transition-opacity duration-300 group-hover:opacity-0"
+                        />
+                        {/* Segunda imagen que aparece en hover */}
+                        <CldImage
+                          src={product.img2}
+                          alt={`${product.title} - Segunda vista`}
+                          fill
+                          className="object-cover absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                         />
                       </Link>
 

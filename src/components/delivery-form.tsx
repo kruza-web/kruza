@@ -61,6 +61,10 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
   const stableOnComplete = useCallback(onComplete, [])
 
   useEffect(() => {
+    setSelectedProvince("CABA")
+  }, [setSelectedProvince])
+
+  useEffect(() => {
     const loadUserData = async () => {
       if (!email) {
         setIsLoading(false)
@@ -79,27 +83,13 @@ export function DeliveryForm({ email, onComplete }: DeliveryFormProps) {
             streetNumber: userData.streetNumber?.toString() || "",
             postalCode: userData.postalCode || "",
             city: userData.city || "",
-            state: userData.state || "",
+            state: userData.state || "CABA",
             indications: userData.indications || "",
           }
 
           setFormData(newFormData)
 
-          if (userData.state) {
-            setSelectedProvince(userData.state)
-          }
-
-          const isComplete =
-            userData.phone &&
-            userData.street &&
-            userData.streetNumber &&
-            userData.postalCode &&
-            userData.city &&
-            userData.state
-
-          if (isComplete) {
-            stableOnComplete()
-          }
+          setSelectedProvince(userData.state || "CABA")
         }
       } catch (error) {
         console.error("Error loading user data:", error)

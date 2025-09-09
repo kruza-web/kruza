@@ -10,7 +10,7 @@ export function InfoBanner() {
     {
       icon: CreditCard,
       title: "MEDIOS DE PAGO",
-      description: "6 cuotas sin interés a partir de $250.000",
+      description: "Paga en efectivo, debito o credito con MercadoPago",
     },
     {
       icon: Phone,

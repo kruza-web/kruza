@@ -46,9 +46,9 @@ export function ClientHeader({ user, email, products, session, sessionName, sess
       }`}
     >
       {/* BANNER SUPERIOR */}
-      <div className="w-full max-w-screen bg-black text-white text-center py-2 text-sm font-medium">
+      {/* <div className="w-full max-w-screen bg-black text-white text-center py-2 text-sm font-medium">
         6 CUOTAS SIN INTERÉS A PARTIR DE $250.000
-      </div>
+      </div> */}
       <div className="flex items-center justify-between px-4 py-6 max-w-none">
         <div className="flex lg:hidden items-center justify-between w-full">
           {/* Left side: Drawer and (on tablet) the logo */}
