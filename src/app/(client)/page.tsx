@@ -34,8 +34,15 @@ export default async function Home() {
         {/* Mobile Layout - Split screen */}
         <div className="w-full flex flex-col">
           {/* LADO IZQUIERDO */}
-          <div className="relative w-full h-[100vh] md:hidden overflow-hidden bg-gray-100">
-            <Image src="/banner-principal.jpg" width={3600} height={3600} alt="Fashion model" className="w-full h-full object-cover" />
+          <div className="relative w-screen h-[100vh] md:hidden overflow-hidden bg-gray-100">
+            <Image
+              src="/banner-principal.jpg"
+              width={3600}
+              height={3600}
+              alt="Fashion model"
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
         </div>
 
